@@ -1,6 +1,6 @@
 [basic]
 zone = "default"
-service = "application-diaphragm-measure"
+service = "webscoket"
 apiport = 8000
 apiroot = "/api"
 inswarm = false
