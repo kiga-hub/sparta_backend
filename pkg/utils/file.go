@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,7 +15,7 @@ func GetFolderName(dir string) (string, error) {
 	}
 
 	var dirName string
-	dirList, err := ioutil.ReadDir(dir)
+	dirList, err := os.ReadDir(dir)
 	if err != nil {
 		return "", err
 	}

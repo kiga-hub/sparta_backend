@@ -91,7 +91,6 @@ func (c *WebScoketComponent) SetupHandler(root echoswagger.ApiRoot, base string)
 func (c *WebScoketComponent) Start(ctx context.Context) error {
 	if c.srv != nil {
 		go c.srv.Start()
-		// go c.ws.HandleMessages()
 	}
 	return nil
 }

@@ -11,16 +11,14 @@ import (
 )
 
 type WebsocketServer struct {
-	clients   map[*Client]bool
-	broadcast chan []byte
-	upgrader  websocket.Upgrader
+	clients  map[*Client]bool
+	upgrader websocket.Upgrader
 }
 
 func NewServer() *WebsocketServer {
 	return &WebsocketServer{
-		clients:   make(map[*Client]bool),
-		broadcast: make(chan []byte),
-		upgrader:  websocket.Upgrader{},
+		clients:  make(map[*Client]bool),
+		upgrader: websocket.Upgrader{},
 	}
 }
 
@@ -44,21 +42,6 @@ func (server *WebsocketServer) HandleConnections(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, utils.SuccessJSONData(nil))
 }
-
-// func (server *WebsocketServer) HandleMessages() {
-// 	for {
-// 		msg := <-server.broadcast
-
-// 		for client := range server.clients {
-// 			err := client.Write(websocket.TextMessage, msg)
-// 			if err != nil {
-// 				log.Printf("error: %v", err)
-// 				client.Close()
-// 				delete(server.clients, client)
-// 			}
-// 		}
-// 	}
-// }
 
 func (server *WebsocketServer) RemoveClient(client *Client) {
 	delete(server.clients, client)
