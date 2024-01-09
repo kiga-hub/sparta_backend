@@ -1,14 +1,14 @@
 package utils
 
-// Pagination 分页结构
+// Pagination pagination
 type Pagination struct {
-	PageTotal   int `json:"page_total"`   // 总页数
-	TotalCount  int `json:"total_count"`  // 总数量
-	PageCurrent int `json:"page_current"` // 当前页码
-	PageSize    int `json:"page_size"`    // 页面大小
+	PageTotal   int `json:"page_total"`   // total page
+	TotalCount  int `json:"total_count"`  // total count
+	PageCurrent int `json:"page_current"` // current page
+	PageSize    int `json:"page_size"`    // page size
 }
 
-// JSONResult 用于返回ajax请求的基类
+// JSONResult -
 type JSONResult struct {
 	Code   Code        `json:"code"`
 	Msg    Msg         `json:"msg"`
@@ -52,15 +52,15 @@ func FailJSONData(code Code, msg Msg, err error) *JSONResult {
 	}
 }
 
-// BuildPagination 构建分页信息
+// BuildPagination build pagination
 func BuildPagination(page, limit, total int) *Pagination {
-	// 没有数据就返回空分页
+	// have no data
 	if total == 0 {
 		return &Pagination{
 			PageCurrent: page,
 		}
 	}
-	// 总页数
+	// page total
 	pageTotal := total / limit
 	lastSize := total % limit
 	if lastSize != 0 {
@@ -68,7 +68,7 @@ func BuildPagination(page, limit, total int) *Pagination {
 	}
 	pageSize := limit
 	pageCurrent := page
-	// 最后一页余数数量处理
+	// set page size
 	if page == pageTotal && lastSize != 0 {
 		pageSize = lastSize
 	}

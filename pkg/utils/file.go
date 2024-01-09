@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// GetFolderName 获取当前一级目录文件名
+// GetFolderName get folder name
 func GetFolderName(dir string) (string, error) {
 	if !IsFileExist(dir) {
 		return "", fmt.Errorf("dir is not exist")
@@ -31,7 +31,7 @@ func GetFolderName(dir string) (string, error) {
 	return dirName, nil
 }
 
-// MakeDirIfNotExist 校验文件路径，不存在则创建对应文件夹
+// MakeDirIfNotExist -
 func MakeDirIfNotExist(dir string) error {
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
@@ -43,7 +43,7 @@ func MakeDirIfNotExist(dir string) error {
 	return nil
 }
 
-// IsFileExist 校验文件是否存在
+// IsFileExist checks if the given file exists.
 func IsFileExist(path string) bool {
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
@@ -129,7 +129,7 @@ func ClearDir(dir string) error {
 	return os.RemoveAll(dir)
 }
 
-// ListFilesWithPrefix 返回指定目录下以指定前缀开头的所有文件的路径列表
+// ListFilesWithPrefix returns a list of files with the given prefix in the given directory.
 func ListFilesWithPrefix(dirPath string, prefix string) ([]string, error) {
 	var files []string
 

@@ -3,7 +3,6 @@ package ws
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"time"
@@ -13,13 +12,15 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const errorMsg = "error: %v"
+
 // Client -
 type Client struct {
 	socket *websocket.Conn
 	server *WebsocketServer
 }
 
-// NewBroadcastClient - 创建websocket客户端
+// NewBroadcastClient - Create a new client
 func NewBroadcastClient(conn *websocket.Conn, server *WebsocketServer) *Client {
 	return &Client{
 		socket: conn,
@@ -32,82 +33,91 @@ func (c *Client) Close() error {
 	return c.socket.Close()
 }
 
-// Read - 监控断线事件
+// Read Read message from client
 func (c *Client) Read() {
-	defer func() {
-		//断开连接
-		c.server.RemoveClient(c)
-		c.Close()
-	}()
+	defer c.disconnect()
 	for {
-		var msg SocketMessage
-		err := c.socket.ReadJSON(&msg)
-		if err != nil {
-			fmt.Printf("error: %v", err)
-			delete(c.server.clients, c)
+		if !c.processMessage() {
 			break
 		}
+	}
+}
 
-		fmt.Println("Read websocket: ", msg.Message)
+func (c *Client) disconnect() {
+	//断开连接
+	c.server.RemoveClient(c)
+	err := c.Close()
+	if err != nil {
+		return
+	}
+}
 
-		// cmd := exec.Command("/home/spa", " < ", " in.sphere")
-		// cmd.Dir = "/home/sparta-13Apr2023/bench"
+// processMessage -
+func (c *Client) processMessage() bool {
+	var msg SocketMessage
+	err := c.socket.ReadJSON(&msg)
+	if err != nil {
+		fmt.Printf(errorMsg, err)
+		delete(c.server.clients, c)
+		return false
+	}
 
-		// // 创建一个Buffer，并将msg.Message的内容写入这个Buffer
-		// var stdin bytes.Buffer
-		// stdin.Write([]byte(msg.Message))
-		// cmd.Stdin = &stdin
+	cmd := exec.Command("/home/spa")
+	cmd.Dir = "/home/sparta-13Apr2023/bench"
+	// Open the file
+	file, err := os.Open("/home/sparta-13Apr2023/bench/in.sphere")
+	if err != nil {
+		fmt.Printf(errorMsg, err)
+		return false
+	}
 
-		// // 获取输出对象，可以从该对象中读取输出结果
-		// output, err := cmd.Output()
-		// if err != nil {
-		// 	fmt.Println("cmd err: ", err)
-		// }
+	// Redirect the command's stdin to the file
+	cmd.Stdin = file
 
-		cmd := exec.Command("/home/spa")
-		cmd.Dir = "/home/sparta-13Apr2023/bench"
-		// 打开文件
-		file, err := os.Open("/home/sparta-13Apr2023/bench/in.sphere")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer file.Close()
+	// Create a pipe to capture the command's output
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Printf(errorMsg, err)
+		return false
+	}
 
-		// 将命令的标准输入重定向到文件
-		cmd.Stdin = file
+	// Start executing the command
+	if err := cmd.Start(); err != nil {
+		fmt.Printf(errorMsg, err)
+		return false
+	}
 
-		// 创建一个管道来捕获命令的输出
-		stdout, err := cmd.StdoutPipe()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// 开始执行命令
-		if err := cmd.Start(); err != nil {
-			log.Fatal(err)
-		}
-
-		// 读取命令的输出
+	// Read the command's output in a separate goroutine to prevent blocking
+	go func() {
 		output, err := ioutil.ReadAll(stdout)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Printf(errorMsg, err)
+			return
 		}
 
-		// 等待命令执行完成
-		if err := cmd.Wait(); err != nil {
-			log.Fatal(err)
+		// Close the file after reading
+		err = file.Close()
+		if err != nil {
+			fmt.Printf(errorMsg, err)
+			return
 		}
 
+		// Print the output
 		fmt.Printf("The output: %s\n", output)
-
-		// 打印输出结果
 		fmt.Printf("%s\n", output)
 
-		// output 格式化输出
+		// Format the output
 		result := fmt.Sprintf("%s", output)
-		c.Write(1, []byte(result))
-		c.Write(1, []byte(result))
-	}
+
+		// Write the result to the client
+		err = c.Write(1, []byte(result))
+		if err != nil {
+			fmt.Printf(errorMsg, err)
+			return
+		}
+	}()
+
+	return true
 }
 
 // Write -

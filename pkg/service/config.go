@@ -3,27 +3,27 @@ package service
 import "github.com/spf13/viper"
 
 const (
-	datadir = "service.data_dir"
+	dataDir = "service.data_dir"
 )
 
-// 配置默认值 - 最低优先级
+// defaultConfig - config default value
 var defaultConfig = Config{
-	Datadir: "./data",
+	DataDir: "./data",
 }
 
-// Config - 配置结构
+// Config -
 type Config struct {
-	Datadir string `toml:"datadir" json:"datadir"`
+	DataDir string `toml:"datadir" json:"datadir"`
 }
 
-// SetDefaultConfig - 设置默认配置
+// SetDefaultConfig -
 func SetDefaultConfig() {
-	viper.SetDefault(datadir, defaultConfig.Datadir)
+	viper.SetDefault(dataDir, defaultConfig.DataDir)
 }
 
-// GetConfig - 获取当前配置
+// GetConfig -
 func GetConfig() *Config {
 	return &Config{
-		Datadir: viper.GetString(datadir),
+		DataDir: viper.GetString(dataDir),
 	}
 }
