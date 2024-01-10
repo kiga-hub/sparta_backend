@@ -9,7 +9,7 @@ prof = false
 devmode = false
 
 [log]
-level = "INFO"
+level = "DEBUG"
 path = ""
 graylog = ""
 fields = ""

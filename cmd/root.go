@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	// AppName for 应用名称
+	// AppName for current application
 	AppName string
-	// AppVersion for 应用版本
+	// AppVersion for current application
 	AppVersion string
 )
 

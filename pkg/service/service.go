@@ -6,13 +6,13 @@ import (
 	"github.com/kiga-hub/arc/logging"
 )
 
-// Service - 服务结构
+// Service -
 type Service struct {
 	logger  logging.ILogger
 	service *sync.Map
 }
 
-// New  - 初始化结构
+// New -
 func New(opts ...Option) (*Service, error) {
 	srv := loadOptions(opts...)
 
@@ -26,7 +26,7 @@ func (s *Service) Start() {
 
 }
 
-// Stop - 停止服务
+// Stop -
 func (s *Service) Stop() {
 
 }

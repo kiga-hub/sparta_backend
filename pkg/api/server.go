@@ -7,19 +7,19 @@ import (
 	"github.com/pangpanglabs/echoswagger/v2"
 )
 
-// Handler - 对外接口
+// Handler - for api
 type Handler interface {
 	Setup(echoswagger.ApiRoot, string)
 }
 
-// Server - api处理器
+// Server - api server
 type Server struct {
 	logger logging.ILogger
 	srv    *service.Service
 	ws     *ws.WebsocketServer
 }
 
-// New - 初始化
+// New - create api server
 func New(opts ...Option) Handler {
 	srv := loadOptions(opts...)
 	return srv

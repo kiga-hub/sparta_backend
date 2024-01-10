@@ -43,16 +43,16 @@ func (c *WebScoketComponent) PreInit(ctx context.Context) error {
 // Init the component
 func (c *WebScoketComponent) Init(server *micro.Server) (err error) {
 	c.config = conf.GetBasicConfig()
-	spew.Dump(c.config) // 打印基础配置信息
+	spew.Dump(c.config) // print config
 
-	// 获取日志接口
+	// get logger
 	elLogger := server.GetElement(&micro.LoggingElementKey)
 	if elLogger != nil {
 		c.logger = elLogger.(logging.ILogger)
-		spew.Dump(logConf.GetLogConfig()) // 打印日志配置信息
+		spew.Dump(logConf.GetLogConfig())
 	}
 
-	// 初始化基础服务
+	// init basic service
 	if c.srv, err = service.New(
 		service.WithLogger(c.logger),
 	); err != nil {
@@ -60,7 +60,7 @@ func (c *WebScoketComponent) Init(server *micro.Server) (err error) {
 	}
 
 	c.ws = ws.NewServer()
-	// 初始化web api接口服务
+	// init api
 	c.api = api.New(
 		api.WithLogger(c.logger),
 		api.WithService(c.srv),
@@ -70,17 +70,17 @@ func (c *WebScoketComponent) Init(server *micro.Server) (err error) {
 	return nil
 }
 
-// SetDynamicConfig 加载动态配置回调
+// SetDynamicConfig load dynamic config
 func (c *WebScoketComponent) SetDynamicConfig(nf *platformConf.NodeConfig) error {
 	return nil
 }
 
-// OnConfigChanged 动态配置修改回调函数
+// OnConfigChanged modify config
 func (c *WebScoketComponent) OnConfigChanged(*platformConf.NodeConfig) error {
 	return micro.ErrNeedRestart
 }
 
-// SetupHandler 安装路由
+// SetupHandler setup handler
 func (c *WebScoketComponent) SetupHandler(root echoswagger.ApiRoot, base string) error {
 	root.Echo().Static("/static", "./static")
 	c.api.Setup(root, base)
@@ -99,7 +99,7 @@ func (c *WebScoketComponent) Start(ctx context.Context) error {
 func (c *WebScoketComponent) Stop(ctx context.Context) error {
 	if c.srv != nil {
 		c.srv.Stop()
-		// 移除所有websocket连接
+		// remove all connections
 		c.ws.RemoveAllConn()
 	}
 	return nil

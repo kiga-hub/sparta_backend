@@ -24,7 +24,8 @@ func NewServer() *WebsocketServer {
 
 // SocketMessage this is socket msg struct
 type SocketMessage struct {
-	Message string `json:"message"`
+	Message string            `json:"message"`
+	Data    map[string]string `json:"data"`
 }
 
 // HandleConnections -

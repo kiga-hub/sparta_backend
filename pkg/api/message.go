@@ -12,9 +12,9 @@ func (s *Server) setupMsg(root echoswagger.ApiRoot, base string) {
 	g := root.Group("Websocket", base+"/ws")
 	g.GET("", s.Connect).
 		SetOperationId(`websocket connect`).
-		SetSummary("创建websocket连接").
-		SetDescription(`创建websocket连接`).
-		AddParamQuery("", "device", "app、web", true).
+		SetSummary("create websocket connectio").
+		SetDescription(`create websocket conenction`).
+		AddParamQuery("", "device", "app、web", false).
 		AddResponse(http.StatusOK, ``, nil, nil)
 }
 

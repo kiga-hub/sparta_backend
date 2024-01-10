@@ -1,46 +1,47 @@
-# 项目文档
+# Project Documentation
 
-- 后端：用`echo`快速搭建基础restful风格API。
-- 网络服务器框架：使用`gnet`网络框架实现数据接收。
-- API文档：使用`Swagger`构建自动化文档。
-- 配置文件：使用`viper`解析配置文件。
-- CLI: 使用`cobra`实现命令行参数。
+- Backend: Quickly build basic restful style API with `echo`.
+- Network Server Framework: Implement data reception using the `gnet` network framework.
+- API Documentation: Build automated documentation with `Swagger`.
+- Configuration File: Parse configuration files using `viper`.
+- CLI: Implement command line parameters with `cobra`.
 
-## 1. 安装说明
+## 1. Installation Instructions
 
-- golang版本 >= v1.20
+- golang version >= v1.20
 
-### 2. 源码编译
+### 2. Source Code Compilation
 
 ```bash
-# 使用 go.mod
+# Using go.mod
 
-# 安装go依赖包
+# Install go dependency packages
 go list (go mod tidy)
 
-# 编译
+# Compile
 ./build.sh websocket websocket
 ```
 
-### 2.2 修改配置文件
+### 2.2 Modify Configuration File
 
 ```bash
 vim websocket.toml
 ```
 
-### 2.3 启动
+### 2.3 Start
 
 ```bash
-# 运行
+# Run
 ./websocket run
 ```
 
-### 2.4 Docker安装
+### 2.4 Docker Installation
 
 ```bash
-# 创建docker镜像
+# Create docker image
 make
 
-# 启动
+# Start
 docker run -it --rm -p 8000:8000 --name websocket websocket:dev
 ```
+

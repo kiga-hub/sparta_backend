@@ -9,19 +9,19 @@ import (
 )
 
 var (
-	// AppName - 应用名称
+	// AppName - app name
 	AppName string
-	// AppVersion - 应用版本
+	// AppVersion - app version
 	AppVersion string
-	// BuildVersion - 编译版本
+	// BuildVersion - build version
 	BuildVersion string
-	// BuildTime - 编译时间
+	// BuildTime - build time
 	BuildTime string
-	// GitRevision - Git版本
+	// GitRevision - Git version
 	GitRevision string
-	// GitBranch - Git分支
+	// GitBranch - Git branch
 	GitBranch string
-	// GoVersion - Golang信息
+	// GoVersion - Golang information
 	GoVersion string
 )
 
