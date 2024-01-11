@@ -28,6 +28,14 @@ go list (go mod tidy)
 vim websocket.toml
 ```
 
+### firewall
+
+```bash
+firewall-cmd --zone=public --add-port=8000/tcp --permanent
+firewall-cmd --reload
+# netstat -an | grep 8000
+```
+
 ### third-party library
 
 install cmake: version = 3.16.0
