@@ -28,6 +28,12 @@ go list (go mod tidy)
 vim websocket.toml
 ```
 
+### third-party library
+
+```bash
+apt install libopenmpi-dev
+```
+
 ### 2.3 Start
 
 ```bash
