@@ -7,6 +7,7 @@ import (
 // Setup register api
 func (s *Server) Setup(root echoswagger.ApiRoot, base string) {
 	if s.srv != nil {
-		s.setupMsg(root, base)
+		s.setupRESTfulApi(root, base)
+		s.setupWebsocket(root, base)
 	}
 }

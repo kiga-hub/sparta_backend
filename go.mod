@@ -8,7 +8,6 @@ require (
 	github.com/kiga-hub/arc v1.0.8
 	github.com/labstack/echo/v4 v4.11.3
 	github.com/pangpanglabs/echoswagger/v2 v2.4.1
-	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.10.1
 	go.uber.org/automaxprocs v1.4.0
@@ -69,6 +68,7 @@ require (
 	github.com/nacos-group/nacos-sdk-go v1.1.4 // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.14.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect

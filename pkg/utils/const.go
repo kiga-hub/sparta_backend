@@ -6,6 +6,8 @@ type Code int
 // Msg -
 type Msg string
 
+const ErrorMsg = "error: %v"
+
 // Error -
 const (
 	// Success -
@@ -40,4 +42,16 @@ const (
 	ErrParseCode Code = 100700
 	// ErrCodeParseMsg -
 	ErrCodeParseMsg Msg = "parse error"
+)
+
+// socket - error
+const (
+	// ErrSocketConnectFailCode -
+	ErrSocketConnectFailCode Code = 400100
+	// ErrSocketConnectFailMsg -
+	ErrSocketConnectFailMsg Msg = "socket connect error"
+	// ErrSocketRWFailCode Socket
+	ErrSocketRWFailCode Code = 400200
+	// ErrSocketRWFailMsg -
+	ErrSocketRWFailMsg Msg = "socket rw error"
 )

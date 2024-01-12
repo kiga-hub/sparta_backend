@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/kiga-hub/websocket/pkg/service"
-	"github.com/kiga-hub/websocket/pkg/ws"
 
 	"github.com/davecgh/go-spew/spew"
 	platformConf "github.com/kiga-hub/arc/conf"
@@ -26,7 +25,7 @@ type WebScoketComponent struct {
 	logger logging.ILogger
 	api    api.Handler
 	srv    *service.Service
-	ws     *ws.WebsocketServer
+	// ws     *ws.WebsocketServer
 }
 
 // Name of the component
@@ -59,12 +58,10 @@ func (c *WebScoketComponent) Init(server *micro.Server) (err error) {
 		return err
 	}
 
-	c.ws = ws.NewServer()
 	// init api
 	c.api = api.New(
 		api.WithLogger(c.logger),
 		api.WithService(c.srv),
-		api.WithWebsocketServer(c.ws),
 	)
 
 	return nil
@@ -99,8 +96,6 @@ func (c *WebScoketComponent) Start(ctx context.Context) error {
 func (c *WebScoketComponent) Stop(ctx context.Context) error {
 	if c.srv != nil {
 		c.srv.Stop()
-		// remove all connections
-		c.ws.RemoveAllConn()
 	}
 	return nil
 }

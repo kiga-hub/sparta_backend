@@ -3,7 +3,6 @@ package api
 import (
 	"github.com/kiga-hub/arc/logging"
 	"github.com/kiga-hub/websocket/pkg/service"
-	"github.com/kiga-hub/websocket/pkg/ws"
 )
 
 // Option is a function that will set up option.
@@ -31,11 +30,5 @@ func WithLogger(logger logging.ILogger) Option {
 func WithService(g *service.Service) Option {
 	return func(opts *Server) {
 		opts.srv = g
-	}
-}
-
-func WithWebsocketServer(s *ws.WebsocketServer) Option {
-	return func(opts *Server) {
-		opts.ws = s
 	}
 }

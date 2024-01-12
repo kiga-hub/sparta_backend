@@ -103,6 +103,16 @@ source ~/.bashrc
 ./websocket run
 ```
 
+### view api 
+
+```bash
+http://localhost:8000/api/swagger
+```
+
+eg.:
+
+<img src="screenshot.png"/>
+
 ### 2.4 Docker Installation
 
 ```bash
