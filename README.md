@@ -300,3 +300,86 @@ make
 # Start
 docker run -it --rm -p 8000:8000 --name websocket websocket:dev
 ```
+
+## Env
+
+To upgrade Python on CentOS 7:
+
+1. check the current version of Python:
+
+```bash
+python --version
+```
+
+2. Install the Software Collections (SCL) repository:
+
+```bash
+sudo yum install centos-release-scl
+```
+
+3. install a newer version of Python (for example, Python 3.8):
+
+```bash
+sudo yum install rh-python38
+```
+
+4. After the installation, you need to enable the Python 3.8 environment:
+
+```bash
+scl enable rh-python38 bash
+```
+
+5. Now, if you check the Python version again, it should show the new version:
+
+```bash
+python --version
+```
+
+install gnuplot
+  
+  ```bash
+  sudo yum install gnuplot
+  ```
+
+install numpy
+  
+  ```bash
+  pip install numpy
+  ```
+
+install vtk
+
+  ```bash
+  pip install vtk
+  ```
+
+install paraview
+
+  ```bash
+  yum install paraview
+  ```
+
+install mpi4py
+
+  ```bash
+  #sudo yum groupinstall 'Development Tools'
+  #sudo yum install python-devel
+  #yum install openmpi-devel
+  # export CC=/usr/lib64/openmpi/bin/mpicc
+
+  sudo yum install rh-python38-python-devel
+  ```
+  
+  ```bash
+  pip install mpi4py
+  ```
+
+
+## Error
+
+ImportError: libSM.so.6: cannot open shared object file: No such file or directory
+
+```bash
+sudo yum install libSM
+```
+

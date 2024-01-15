@@ -13,7 +13,7 @@ var defaultConfig = Config{
 
 // Config -
 type Config struct {
-	DataDir string `toml:"datadir" json:"datadir"`
+	DataDir string `toml:"data_dir" json:"data_dir"`
 }
 
 // SetDefaultConfig -

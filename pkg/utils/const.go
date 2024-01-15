@@ -42,6 +42,10 @@ const (
 	ErrParseCode Code = 100700
 	// ErrCodeParseMsg -
 	ErrCodeParseMsg Msg = "parse error"
+	// ErrImportExportCode import error
+	ErrImportExportCode Code = 300600
+	// ErrImportExportMsg -
+	ErrImportExportMsg Msg = "import error"
 )
 
 // socket - error
@@ -54,4 +58,10 @@ const (
 	ErrSocketRWFailCode Code = 400200
 	// ErrSocketRWFailMsg -
 	ErrSocketRWFailMsg Msg = "socket rw error"
+)
+
+// storage -
+const (
+	// UploadDirName uiload dir
+	UploadDirName = "Upload"
 )

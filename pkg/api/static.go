@@ -9,5 +9,5 @@ import (
 func (s *Server) setupStaticFiles(root echoswagger.ApiRoot, base string) {
 	g := root.Group("StaticFiles", base+"/static")
 	// Access static resource files
-	g.EchoGroup().Static("/", service.GetConfig().DataDir+"/static")
+	g.EchoGroup().Static("", service.GetConfig().DataDir)
 }
