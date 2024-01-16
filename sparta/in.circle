@@ -14,7 +14,8 @@ global              gridcut 0.0 comm/sort yes
 boundary	    oo oo oo
 #units               cgs
 create_box  	    -0.5 0.5 -0.6 0.6 -0.1 0.2
-create_grid 	    200 240 120  #levels 2 subset 2 60*180 60*240 10*50 5 5 5
+create_grid 	    200 240 120  
+#levels 2 subset 2 60*180 60*240 10*50 5 5 5
 balance_grid        rcb cell
 
 global		    nrho 3.28e19 fnum 6.83e10
@@ -22,7 +23,7 @@ global		    nrho 3.28e19 fnum 6.83e10
 species		    co2.species CO2
 mixture		    air CO2 vstream 4900.0 0 0 temp 180.0
 
-read_surf           a.stl scale 0.001 0.001 0.001
+read_surf           b.stl scale 0.001 0.001 0.001
 surf_collide	    1 diffuse 1000.0 1.0
 surf_modify         all collide 1
 
@@ -48,15 +49,14 @@ write_grid data.grid
 #fix                 4 adapt 100 all refine coarsen particle 100 80
 #fix                 5 balance 200 1.1 rcb cell
 
-timestep 	    5.102e-7
+#timestep 	    5.102e-7
+timestep 	    0.0001
 
-dump                2 image all 100 image.*.ppm type type pdiam 0.001 &
-                   surf proc 0.01 size 1024 1024 zoom 1.75 &
-                  gline no 0.005 
-dump_modify	    2 pad 4
+#dump                2 image all 100 image.*.ppm type type pdiam 0.001 &
+#                   surf proc 0.01 size 1024 1024 zoom 1.75 &
+#                  gline no 0.005 
+#dump_modify	    2 pad 4
 
 stats		    100
 stats_style	    step cpu np nattempt ncoll nscoll nscheck
-
 run 		    6000
-

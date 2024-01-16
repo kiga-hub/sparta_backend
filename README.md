@@ -88,12 +88,16 @@ whereis openmpi
 # openmpi: /usr/local/openmpi
 
 # set env
-vim ~/.bashrc
-#add
-export PATH=$PATH:/usr/local/openmpi/bin
-export LD_LIBRARY_PATH=/usr/local/openmpi/lib
-
 source ~/.bashrc
+
+# 添加路径
+MYAPP=/usr/local/openmpi                                                          
+# OPENMPI 3.1.6
+export PATH=${MYAPP}/bin:$PATH
+export LD_LIBRARY_PATH=${MYAPP}/lib:$LD_LIBRARY_PATH
+export INCLUDE=${MYAPP}/include/:$INCLUDE
+export CPATH=${MYAPP}/include/:$CPATH
+export MANPATH=${MYAPP}/share/man:$MANPATH
 ```
 
 ### 2.3 Start
@@ -331,9 +335,14 @@ scl enable rh-python38 bash
 
 5. Now, if you check the Python version again, it should show the new version:
 
-```bash
-python --version
-```
+  ```bash
+  python --version
+  ```
+
+  ```bash
+  sudo yum install python-pip
+  pip install --upgrade pip
+  ```
 
 install gnuplot
   
