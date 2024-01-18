@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/kiga-hub/websocket/pkg/service"
+	"github.com/kiga-hub/sparta_backend/pkg/service"
 	"github.com/pangpanglabs/echoswagger/v2"
 )
 

@@ -8,7 +8,7 @@ import (
 
 func main() {
 	cmd := exec.Command("python", "./vtk_version.py")
-	cmd.Dir = "/home/workspace/project/websocket/script"
+	cmd.Dir = "/home/workspace/project/sparta_backend/script"
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

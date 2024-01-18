@@ -12,7 +12,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/kiga-hub/arc/logging"
-	"github.com/kiga-hub/websocket/pkg/utils"
+	"github.com/kiga-hub/sparta_backend/pkg/utils"
 )
 
 const (

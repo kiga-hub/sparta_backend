@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/kiga-hub/arc/logging"
-	"github.com/kiga-hub/websocket/pkg/service"
+	"github.com/kiga-hub/sparta_backend/pkg/service"
 )
 
 // Option is a function that will set up option.

@@ -3,7 +3,7 @@ package component
 import (
 	"context"
 
-	"github.com/kiga-hub/websocket/pkg/service"
+	"github.com/kiga-hub/sparta_backend/pkg/service"
 
 	"github.com/davecgh/go-spew/spew"
 	platformConf "github.com/kiga-hub/arc/conf"
@@ -11,7 +11,7 @@ import (
 	logConf "github.com/kiga-hub/arc/logging/conf"
 	"github.com/kiga-hub/arc/micro"
 	"github.com/kiga-hub/arc/micro/conf"
-	"github.com/kiga-hub/websocket/pkg/api"
+	"github.com/kiga-hub/sparta_backend/pkg/api"
 	"github.com/pangpanglabs/echoswagger/v2"
 )
 

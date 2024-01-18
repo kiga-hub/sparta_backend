@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/kiga-hub/websocket/cmd"
+	"github.com/kiga-hub/sparta_backend/cmd"
 	_ "go.uber.org/automaxprocs"
 )
 

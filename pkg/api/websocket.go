@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/kiga-hub/websocket/pkg/utils"
+	"github.com/kiga-hub/sparta_backend/pkg/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
 )

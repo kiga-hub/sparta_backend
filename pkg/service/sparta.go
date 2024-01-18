@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kiga-hub/websocket/pkg/models"
-	"github.com/kiga-hub/websocket/pkg/utils"
+	"github.com/kiga-hub/sparta_backend/pkg/models"
+	"github.com/kiga-hub/sparta_backend/pkg/utils"
 	"github.com/labstack/echo/v4"
 )
 

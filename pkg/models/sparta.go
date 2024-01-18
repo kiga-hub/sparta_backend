@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/kiga-hub/websocket/pkg/utils"
+	"github.com/kiga-hub/sparta_backend/pkg/utils"
 )
 
 // Sparta -

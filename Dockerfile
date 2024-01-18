@@ -1,14 +1,14 @@
 FROM golang:1.20.8-bullseye as builder
 COPY . .
-RUN bash build.sh websocket /websocket
+RUN bash build.sh sparta_backend /sparta_backend
 
 FROM golang:1.20.8-bullseye
-COPY --from=builder /websocket /websocket
-COPY websocket.toml /websocket.toml
+COPY --from=builder /sparta_backend /sparta_backend
+COPY sparta_backend.toml /sparta_backend.toml
 ENV GODEBUG cgocheck=0
 COPY swagger /swagger
 WORKDIR /
 #HEALTHCHECK --interval=30s --timeout=15s \
 #    CMD curl --fail http://localhost:80/health || exit 1
-ENTRYPOINT [ "/websocket" ]
+ENTRYPOINT [ "/sparta_backend" ]
 CMD ["run"]

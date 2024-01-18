@@ -1,4 +1,4 @@
-PROJECT_NAME=websocket
+PROJECT_NAME=sparta_backend
 API_ROOT=/api
 
 .PHONY: image swagger-client swagger-server

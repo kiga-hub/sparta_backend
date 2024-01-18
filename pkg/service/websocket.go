@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/gorilla/websocket"
-	"github.com/kiga-hub/websocket/pkg/ws"
+	"github.com/kiga-hub/sparta_backend/pkg/ws"
 	"github.com/labstack/echo/v4"
 )
 

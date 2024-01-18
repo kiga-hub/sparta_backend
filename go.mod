@@ -1,4 +1,4 @@
-module github.com/kiga-hub/websocket
+module github.com/kiga-hub/sparta_backend
 
 go 1.18
 

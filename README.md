@@ -19,13 +19,13 @@
 go list (go mod tidy)
 
 # Compile
-./build.sh websocket websocket
+./build.sh sparta_backend sparta_backend
 ```
 
 ### 2.2 Modify Configuration File
 
 ```bash
-vim websocket.toml
+vim sparta_backend.toml
 ```
 
 ### firewall
@@ -104,7 +104,7 @@ export MANPATH=${MYAPP}/share/man:$MANPATH
 
 ```bash
 # Run
-./websocket run
+./sparta_backend run
 ```
 
 ### view api 
@@ -117,7 +117,7 @@ eg.:
 
 <img src="screenshot.png"/>
 
-request websocket： ws://localhost:8000/api/ws
+request sparta_backend ws://localhost:8000/api/ws
 
 #### The output is as follows：
 
@@ -302,7 +302,7 @@ Histogram: 1 0 0 0 0 0 0 0 0 0
 make
 
 # Start
-docker run -it --rm -p 8000:8000 --name websocket websocket:dev
+docker run -it --rm -p 8000:8000 --name sparta_backend sparta_backend:dev
 ```
 
 ## Env

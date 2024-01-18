@@ -11,7 +11,7 @@ import (
 	"github.com/kiga-hub/arc/tracing"
 	"github.com/spf13/cobra"
 
-	"github.com/kiga-hub/websocket/pkg/component"
+	"github.com/kiga-hub/sparta_backend/pkg/component"
 )
 
 func init() {
@@ -22,7 +22,7 @@ func init() {
 // serverCmd .
 var serverCmd = &cobra.Command{
 	Use:   "run",
-	Short: "run websocket",
+	Short: "run sparta_backend",
 	Run:   run,
 }
 
