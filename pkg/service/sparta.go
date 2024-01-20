@@ -15,10 +15,10 @@ import (
 // CreatingParticles -
 func (s *Service) CreatingParticles(sparta *models.Sparta) interface{} {
 
-	result := sparta.ProcessSparta()
-	s.logger.Info("Sparta: ", result)
+	sparta.ProcessSparta()
+	s.logger.Info("Sparta")
 
-	return result
+	return "ok"
 }
 
 // HandleUploadFile handle upload file

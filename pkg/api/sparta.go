@@ -30,7 +30,6 @@ func (s *Server) setupRESTfulApi(root echoswagger.ApiRoot, base string) {
 
 // CreatingParticles -
 func (s *Server) CreatingParticles(c echo.Context) error {
-
 	// parse c to models.Sparta
 	var sparta models.Sparta
 	if err := c.Bind(&sparta); err != nil {
