@@ -16,3 +16,6 @@ fields = ""
 
 [service]
 data_dir = "./data"
+root_dir = "./workspace"
+sparta_python_tools = "/home/sparta/tools/pizza" # export SPARTA_PYTHON_TOOLS=/home/sparta/tools/pizza
+exec_dir = "/home/sparta/tools"
