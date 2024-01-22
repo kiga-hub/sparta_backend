@@ -11,6 +11,12 @@ import (
 // 	Data    map[string]string `json:"data"`
 // }
 
+type SpartaResultDirectory struct {
+	StlDir  string `json:"stl_dir"`
+	SurfDir string `json:"surf_dir"`
+	OutDir  string `json:"out_dir"`
+}
+
 type Sparta struct {
 	Dimension       string   `json:"dimension"`
 	BoundaryXLO     string   `json:"boundary_xlo"` // o a r s
@@ -53,7 +59,7 @@ type Sparta struct {
 	Run      string `json:"run"`       // 计算步数
 }
 
-func (c *Sparta) ProcessSparta() {
+func (c *Sparta) ProcessSparta(dir string) {
 	fmt.Println("Process Sparta: ", c)
 	// 打开文件用于写入
 	file, err := os.Create("./data/in.circle")

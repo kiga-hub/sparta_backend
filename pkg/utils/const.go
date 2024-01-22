@@ -63,5 +63,5 @@ const (
 // storage -
 const (
 	// UploadDirName uiload dir
-	UploadDirName = "Upload"
+	UploadDirName = "upload"
 )

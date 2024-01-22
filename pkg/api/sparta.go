@@ -49,11 +49,11 @@ func (s *Server) importSTL(c echo.Context) error {
 	}
 
 	// parse import file
-	exportInfo, err := s.srv.ParseImportFile(uploadDir)
+	result, err := s.srv.ParseImportFile(uploadDir) // result info
 	if err != nil {
 		s.logger.Error(err)
 		return c.JSON(http.StatusOK, utils.FailJSONData(utils.ErrImportExportCode, utils.ErrImportExportMsg, err))
 	}
 
-	return c.JSON(http.StatusOK, utils.SuccessJSONData(string(exportInfo)))
+	return c.JSON(http.StatusOK, result)
 }

@@ -15,7 +15,8 @@ graylog = ""
 fields = ""
 
 [service]
-data_dir = "./data"
+data_dir = "/home/workspace/project/sparta_backend/data" 
 root_dir = "./workspace"
 sparta_python_tools = "/home/sparta/tools/pizza" # export SPARTA_PYTHON_TOOLS=/home/sparta/tools/pizza
 exec_dir = "/home/sparta/tools"
+spa_exec = "/home/spa_"
