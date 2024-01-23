@@ -26,6 +26,13 @@ go list (go mod tidy)
 
 ```bash
 vim sparta_backend.toml
+
+[service]
+data_dir = "/home/workspace/project/sparta_backend/data"                      # generate all file in this directory
+root_dir = "/home/workspace/project/sparta_backend"                           # - ignore
+sparta_python_tools = "/home/workspace/project/sparta_backend/sparta/pizza"   # export SPARTA_PYTHON_TOOLS=/this path
+script_dir = "/home/workspace/project/sparta_backend/sparta"                  # python script path
+spa_exec = "/home/workspace/project/sparta_backend/bin/spa_"                  # sparta executable file
 ```
 
 ### firewall
@@ -40,9 +47,6 @@ firewall-cmd --reload
 
 install cmake: version = 3.16.0
 
-```bash
-sudo yum remove cmake
-```
 
 ```bash
 wget https://github.com/Kitware/CMake/releases/download/v3.16.0/cmake-3.16.0.tar.gz
@@ -66,39 +70,45 @@ sudo make install
 cmake --version
 ```
 
-#### Ubuntu
+#### Install libopenmpi
+
 ```bash
 apt install libopenmpi-dev
 ```
+## Install paraview 
 
-#### Centos
 ```bash
-wget https://download.open-mpi.org/release/open-mpi/v3.1/openmpi-3.1.0.tar.gz
-# or go to src pakcage
-tar -zxvf openmpi-3.1.0.tar.gz
-
-# install
-cd openmpi-3.1.0/
-./configure --prefix=/usr/local/openmpi
-make -j 48
-make install
-
-# get info
-whereis openmpi 
-# openmpi: /usr/local/openmpi
-
-# set env
-source ~/.bashrc
-
-# 添加路径
-MYAPP=/usr/local/openmpi                                                          
-# OPENMPI 3.1.6
-export PATH=${MYAPP}/bin:$PATH
-export LD_LIBRARY_PATH=${MYAPP}/lib:$LD_LIBRARY_PATH
-export INCLUDE=${MYAPP}/include/:$INCLUDE
-export CPATH=${MYAPP}/include/:$CPATH
-export MANPATH=${MYAPP}/share/man:$MANPATH
+# ubuntu
+apt install paraview
 ```
+
+## install paraview 
+
+```bash
+# ubuntu
+apt install paraview
+```
+
+## Install convert command
+
+```bash
+apt-get install imagemagick
+```
+
+## Extract
+
+```bash
+tar -xvf sparta.tar.gz -C /home
+```
+
+## make all component
+
+```bash
+rm -rf build
+mkdir build install
+cd build
+```
+
 
 ### 2.3 Start
 
@@ -305,90 +315,32 @@ make
 docker run -it --rm -p 8000:8000 --name sparta_backend sparta_backend:dev
 ```
 
-## Env
-
-To upgrade Python on CentOS 7:
-
-1. check the current version of Python:
+### script command
 
 ```bash
-python --version
+# spa command
+/home/workspace/project/sparta_backend/bin/spa_  < in.circle
+
+# if need to use python script
+# export SPARTA_PYTHON_TOOLS=/home/workspace/project/sparta_backend/sparta/pizza
+
+## convert ppm to gif
+convert *.ppm image.gif
+
+## grid2paraview
+pvpython grid2paraview.py  /home/workspace/project/sparta_backend/data/in.txt /home/workspace/project/sparta_backend/data/output/  -r /home/workspace/project/sparta_backend/data/tmp.grid.*
+
+## log2txt
+python log2txt.py ../examples/circle/log.sparta  data.txt
 ```
 
-2. Install the Software Collections (SCL) repository:
+-----------
 
+### Using preset file
 ```bash
-sudo yum install centos-release-scl
+for i in serial chama openmpi
+do 
+cmake --log-level=VERBOSE [-C /home/sparta/cmake/presets/$i.cmake] -DBUILD_SHARED_LIBS=ON /home/sparta/cmake
+make VERBOSE=1
+done
 ```
-
-3. install a newer version of Python (for example, Python 3.8):
-
-```bash
-sudo yum install rh-python38
-```
-
-4. After the installation, you need to enable the Python 3.8 environment:
-
-```bash
-scl enable rh-python38 bash
-```
-
-5. Now, if you check the Python version again, it should show the new version:
-
-  ```bash
-  python --version
-  ```
-
-  ```bash
-  sudo yum install python-pip
-  pip install --upgrade pip
-  ```
-
-install gnuplot
-  
-  ```bash
-  sudo yum install gnuplot
-  ```
-
-install numpy
-  
-  ```bash
-  pip install numpy
-  ```
-
-install vtk
-
-  ```bash
-  pip install vtk
-  ```
-
-install paraview
-
-  ```bash
-  yum install paraview
-  ```
-
-install mpi4py
-
-  ```bash
-  #sudo yum groupinstall 'Development Tools'
-  #sudo yum install python-devel
-  #yum install openmpi-devel
-  # export CC=/usr/lib64/openmpi/bin/mpicc
-
-  sudo yum install rh-python38-python-devel
-  ```
-  
-  ```bash
-  pip install mpi4py
-  ```
-
-
-## Error
-
-ImportError: libSM.so.6: cannot open shared object file: No such file or directory
-
-```bash
-sudo yum install libSM
-```
-

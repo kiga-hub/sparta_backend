@@ -116,7 +116,7 @@ func (c *Sparta) ProcessSparta(dir, surfName string) string {
 	fmt.Fprintf(inFile, "\n")
 
 	// fmt.Fprintf(inFile, "read_surf        %s %s %s\n", filepath.Base(GlobalSurfName), "scale", "0.001 0.001 0.001")
-	fmt.Fprintf(inFile, "read_surf        %s %s %s\n", surfName, "scale", "0.001 0.001 0.001")
+	fmt.Fprintf(inFile, "read_surf        %s %s %s\n", "b.surf", "scale", "0.001 0.001 0.001") // surfName
 	fmt.Fprintf(inFile, "surf_collide     %s %s %s %s\n", "1", c.SurfCollideType, c.WallTemperature, c.Reflectivity)
 	fmt.Fprintf(inFile, "surf_modify      %s %s %s\n", "all", "collide", "1")
 	fmt.Fprintf(inFile, "\n")
