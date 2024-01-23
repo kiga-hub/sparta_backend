@@ -15,7 +15,7 @@ func (s *Server) setupWebsocket(root echoswagger.ApiRoot, base string) {
 
 	g.GET("", s.WsConnect).
 		SetOperationId(`websocket connect`).
-		SetSummary("create websocket connectio").
+		SetSummary("create websocket conenction").
 		SetDescription(`create websocket conenction`).
 		AddResponse(http.StatusOK, ``, nil, nil)
 

@@ -9,14 +9,14 @@ prof = false
 devmode = false
 
 [log]
-level = "DEBUG"
+level = "INFO"
 path = ""
 graylog = ""
 fields = ""
 
 [service]
 data_dir = "/home/workspace/project/sparta_backend/data" 
-root_dir = "./workspace"
-sparta_python_tools = "/home/sparta/tools/pizza" # export SPARTA_PYTHON_TOOLS=/home/sparta/tools/pizza
-exec_dir = "/home/sparta/tools"
-spa_exec = "/home/spa_"
+root_dir = "/home/workspace/project/sparta_backend"
+sparta_python_tools = "/home/workspace/project/sparta_backend/sparta/pizza" # export SPARTA_PYTHON_TOOLS=/home/sparta/tools/pizza
+script_dir = "/home/workspace/project/sparta_backend/sparta"
+spa_exec = "/home/workspace/project/sparta_backend/bin/spa_"

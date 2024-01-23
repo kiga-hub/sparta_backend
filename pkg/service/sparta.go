@@ -15,16 +15,23 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// CreatingParticles -
-func (s *Service) CreatingParticles(sparta *models.Sparta) interface{} {
+// ConvertToParaview -
+func (s *Service) ConvertToParaview(sparta *models.Sparta) interface{} {
+
+	// if models.GlobalSurfName == "" {
+	// 	models.GlobalSurfName = GetConfig().DataDir
+	// }
+	surfName := strings.Replace(sparta.UploadStlName, "stl", "surf", -1)
 
 	// process parameters
-	sparta.ProcessSparta(GetConfig().DataDir)
+	circleName := sparta.ProcessSparta(GetConfig().DataDir, surfName)
 	s.logger.Info("Sparta")
 
 	// calculate particles. it will calculate the in.circle file .and generate the out (**)
-	s.CalculateSpartaResult()
+	s.CalculateSpartaResult(circleName)
 
+	// convert to paraview file
+	s.Grid2Paraview(filepath.Dir(circleName))
 	return "OK"
 }
 
@@ -50,16 +57,19 @@ func (s *Service) HandleUploadFile(c echo.Context) (string, error) {
 	// 	return "", err
 	// }
 
+	// get current time. and convert to 20060102150405
+	// currentTime := time.Now().Format("20060102150405")
+
 	// imnpiort file path
-	uploadDir := filepath.Join(GetConfig().DataDir, utils.UploadDirName, file.Filename)
+	stlDir := filepath.Join(GetConfig().DataDir, file.Filename) // filepath.Join(GetConfig().DataDir, currentTime, file.Filename)
 
 	// create upload dir if not exist
-	if err := utils.MakeDirIfNotExist(uploadDir); err != nil {
+	if err := utils.MakeDirIfNotExist(stlDir); err != nil {
 		s.logger.Error(err)
 		return "", err
 	}
 
-	f, err := os.Create(uploadDir)
+	f, err := os.Create(stlDir)
 	if err != nil {
 		s.logger.Error(err)
 		return "", err
@@ -72,36 +82,37 @@ func (s *Service) HandleUploadFile(c echo.Context) (string, error) {
 		return "", err
 	}
 
-	return uploadDir, nil
+	return stlDir, nil
 }
 
 // ParseImportFile -
-func (s *Service) ParseImportFile(exportFile string) (*models.SpartaResultDirectory, error) {
-	if !utils.IsFileExist(exportFile) {
+func (s *Service) ParseImportFile(stlFile string) (*models.SpartaResultDirectory, error) {
+	if !utils.IsFileExist(stlFile) {
 		return nil, errors.New("import file is not exist")
 	}
 
-	file, err := os.Open(exportFile)
+	file, err := os.Open(stlFile)
 	if err != nil {
 		s.logger.Error(err)
 		return nil, err
 	}
 	defer file.Close()
 
-	fmt.Println("file.dir: ", filepath.Dir(exportFile))
-	fmt.Println("file.name: ", filepath.Base(exportFile))
+	// fmt.Println("file.dir: ", filepath.Dir(stlFile))
+	// fmt.Println("file.name: ", filepath.Base(stlFile))
 
-	stlName := exportFile
-	fmt.Println("stlName: ", stlName)
+	stlName := stlFile
+	// fmt.Println("stlName: ", stlName)
 
+	surfName := filepath.Join(filepath.Dir(stlName), strings.Replace(filepath.Base(stlFile), filepath.Ext(stlFile), ".surf", -1))
 	// generate surf file directory
-	surfName := filepath.Join(GetConfig().DataDir, utils.UploadDirName, strings.TrimSuffix(filepath.Base(exportFile), filepath.Ext(filepath.Base(exportFile)))+".surf")
-	fmt.Println("surfName: ", surfName)
-
+	// fmt.Println("surfName: ", surfName)
+	// models.GlobalSurfName = surfName
+	// fmt.Println("GlobalSurfName: ", surfName)
 	// convert to surf file
 	{
 		cmd := exec.Command("pvpython", "stl2surf.py", stlName, surfName)
-		cmd.Dir = GetConfig().ExecDir // "/home/sparta/tools"
+		cmd.Dir = GetConfig().ScriptDir
 
 		// // read file content
 		// data, err := io.ReadAll(file)
@@ -134,45 +145,6 @@ func (s *Service) ParseImportFile(exportFile string) (*models.SpartaResultDirect
 		fmt.Printf("%s\n", output)
 	}
 
-	// exec python script. calculate the in. file
-	{
-		cmd := exec.Command(GetConfig().SpaExec)
-		cmd.Dir = GetConfig().DataDir
-
-		file, err := os.Open("/home/workspace/project/sparta_backend/data/in.circle")
-		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return nil, err
-		}
-		defer file.Close()
-
-		cmd.Stdin = file
-
-		stdout, err := cmd.StdoutPipe()
-		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return nil, err
-		}
-
-		// Start executing the command
-		if err := cmd.Start(); err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return nil, err
-		}
-
-		// Read the command's output in a separate goroutine to prevent blocking
-		output, err := io.ReadAll(stdout)
-		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return nil, err
-		}
-
-		// Print the output
-		fmt.Printf("The output: %s\n", output)
-		fmt.Printf("%s\n", output)
-
-	}
-
 	resultInfo := &models.SpartaResultDirectory{
 		StlDir:  stlName,
 		SurfDir: surfName,
@@ -181,40 +153,39 @@ func (s *Service) ParseImportFile(exportFile string) (*models.SpartaResultDirect
 	return resultInfo, nil
 }
 
-func (s *Service) CalculateSpartaResult() {
+// CalculateSpartaResult -
+func (s *Service) CalculateSpartaResult(circleName string) string {
 	cmd := exec.Command(GetConfig().SpaExec)
-	cmd.Dir = GetConfig().DataDir
-	// Open the file
-	file, err := os.Open("/home/workspace/project/sparta_backend/data/in.circle")
+	cmd.Dir = filepath.Dir(circleName)
+	// do spar_ < in.circle
+	file, err := os.Open(circleName)
 	if err != nil {
 		fmt.Printf(utils.ErrorMsg, err)
-		return
+		return ""
 	}
 	defer file.Close()
+
 	// Redirect the command's stdin to the file
 	cmd.Stdin = file
-
-	// redirect the command's stdin to the string
-	// cmd.Stdin = strings.NewReader(dataStr)
 
 	// Create a pipe to capture the command's output
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		fmt.Printf(utils.ErrorMsg, err)
-		return
+		return ""
 	}
 
 	// Start executing the command
 	if err := cmd.Start(); err != nil {
 		fmt.Printf(utils.ErrorMsg, err)
-		return
+		return ""
 	}
 
 	// Read the command's output in a separate goroutine to prevent blocking
 	output, err := io.ReadAll(stdout)
 	if err != nil {
 		fmt.Printf(utils.ErrorMsg, err)
-		return
+		return ""
 	}
 
 	// Print the output
@@ -226,4 +197,52 @@ func (s *Service) CalculateSpartaResult() {
 
 	// Write the result to the client
 	fmt.Println(result)
+	return filepath.Dir(circleName)
+}
+
+// Grid2Paraview -
+func (s *Service) Grid2Paraview(dir string) {
+	go func() {
+		// do grid2paraview. pvpython grid2paraview.py circle.txt output -r tmp.grid.1000
+		txtFile := filepath.Join(dir, "in.txt")
+		outputDir := dir + "/output/"
+		tmpGridDir := filepath.Join(dir, "tmp.grid.*")
+
+		// fmt.Println("txtFile: ", txtFile)
+		// fmt.Println("outputDir: ", outputDir)
+		// fmt.Println("tmpGridDir: ", tmpGridDir)
+
+		cmd := exec.Command("pvpython", "grid2paraview.py", txtFile, outputDir, "-r", tmpGridDir)
+		cmd.Dir = filepath.Join(GetConfig().ScriptDir, "paraview")
+
+		// Create a pipe to capture the command's output
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		// Start executing the command
+		if err := cmd.Start(); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		// Read the command's output in a separate goroutine to prevent blocking
+		output, err := io.ReadAll(stdout)
+		if err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		// Print the output
+		fmt.Printf("The output: %s\n", output)
+		fmt.Printf("%s\n", output)
+
+		// Format the output
+		result := fmt.Sprintf("%s", output)
+
+		// Write the result to the client
+		fmt.Println(result)
+	}()
 }
