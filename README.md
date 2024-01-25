@@ -28,6 +28,14 @@ spa_exec = "/{your workspace dir}/sparta_backend/bin/spa_"                  # sp
 
 - golang version >= v1.20
 
+### 1.1 Install go
+
+reference: 
+
+```bash
+https://kiga.top/docs/install-golang/
+``````
+
 ### 2. Source Code Compilation
 
 ```bash
