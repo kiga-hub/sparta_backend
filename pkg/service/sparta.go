@@ -31,7 +31,9 @@ func (s *Service) ConvertToParaview(sparta *models.Sparta) interface{} {
 	s.CalculateSpartaResult(circleName)
 
 	// convert to paraview file
-	s.Grid2Paraview(filepath.Dir(circleName))
+	if sparta.IsDumpGrid {
+		s.Grid2Paraview(filepath.Dir(circleName))
+	}
 	return "OK"
 }
 

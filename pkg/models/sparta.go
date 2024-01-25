@@ -50,6 +50,7 @@ type Sparta struct {
 	TimeStep        string   `json:"time_step"`
 	Run             string   `json:"run"`
 	UploadStlName   string   `json:"upload_stl_name"`
+	IsDumpGrid      bool     `json:"is_dump_grid"`
 }
 
 // ProcessSparta -
@@ -154,8 +155,10 @@ func (c *Sparta) ProcessSparta(dir, surfName string) string {
 	fmt.Fprintf(inFile, "fix              %s %s %s %s %s %s\n", "3", "ave/grid", "all", "10", "100", "1000 c_3[*]")
 	fmt.Fprintf(inFile, "\n")
 
-	fmt.Fprintf(inFile, "dump             %s %s %s %s %s %s %s %s %s %s %s %s\n", "1", "grid", "all", "1000", "tmp.grid.*", "id", "xc", "yc", "zc", "f_1[*]", "f_2[*]", "f_3[*]")
-	fmt.Fprintf(inFile, "\n")
+	if c.IsDumpGrid {
+		fmt.Fprintf(inFile, "dump             %s %s %s %s %s %s %s %s %s %s %s %s\n", "1", "grid", "all", "1000", "tmp.grid.*", "id", "xc", "yc", "zc", "f_1[*]", "f_2[*]", "f_3[*]")
+		fmt.Fprintf(inFile, "\n")
+	}
 
 	fmt.Fprintf(inFile, "write_grid       %s %s\n", "data.grid", "")
 	fmt.Fprintf(inFile, "\n")

@@ -6,6 +6,24 @@
 - Configuration File: Parse configuration files using `viper`.
 - CLI: Implement command line parameters with `cobra`.
 
+## Start
+
+### Configuration File
+
+```bash
+vim sparta_backend.toml
+
+[service]
+data_dir = "/{your workspace dir}/sparta_backend/data"                      # generate all file 
+sparta_python_tools = "/{your workspace dir}/sparta_backend/sparta/pizza"   # export SPARTA_PYTHON_TOOLS=/this path
+script_dir = "/{your workspace dir}/sparta_backend/sparta"                  # python script path
+spa_exec = "/{your workspace dir}/sparta_backend/bin/spa_"                  # sparta executable file
+```
+
+```bash
+./sparta_backend run
+```
+
 ## 1. Installation Instructions
 
 - golang version >= v1.20
@@ -20,19 +38,6 @@ go list (go mod tidy)
 
 # Compile
 ./build.sh sparta_backend sparta_backend
-```
-
-### 2.2 Modify Configuration File
-
-```bash
-vim sparta_backend.toml
-
-[service]
-data_dir = "/home/workspace/project/sparta_backend/data"                      # generate all file in this directory
-root_dir = "/home/workspace/project/sparta_backend"                           # - ignore
-sparta_python_tools = "/home/workspace/project/sparta_backend/sparta/pizza"   # export SPARTA_PYTHON_TOOLS=/this path
-script_dir = "/home/workspace/project/sparta_backend/sparta"                  # python script path
-spa_exec = "/home/workspace/project/sparta_backend/bin/spa_"                  # sparta executable file
 ```
 
 ### firewall
