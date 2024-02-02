@@ -163,6 +163,11 @@ func (c *Conn) ReadLoop() {
 			fmt.Printf(utils.ErrorMsg, err)
 			return
 		}
+		// Wait for the command to finish
+		if err := cmd.Wait(); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
 
 		// Print the output
 		fmt.Printf("The output: %s\n", output)

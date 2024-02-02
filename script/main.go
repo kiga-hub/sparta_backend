@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+
+	"github.com/kiga-hub/sparta_backend/pkg/utils"
 )
 
 func main() {
@@ -12,6 +14,12 @@ func main() {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Fatal(string(output), err)
+	}
+
+	// Wait for the command to finish
+	if err := cmd.Wait(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
 		log.Fatal(string(output), err)
 	}
 

@@ -141,6 +141,11 @@ func (s *Service) ParseImportFile(stlFile string) (*models.SpartaResultDirectory
 			fmt.Printf(utils.ErrorMsg, err)
 			return nil, err
 		}
+		// Wait for the command to finish
+		if err := cmd.Wait(); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return nil, err
+		}
 
 		// Print the output
 		fmt.Printf("The output: %s\n", output)
@@ -190,6 +195,12 @@ func (s *Service) CalculateSpartaResult(circleName string) string {
 		return ""
 	}
 
+	// Wait for the command to finish
+	if err := cmd.Wait(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
 	// Print the output
 	fmt.Printf("The output: %s\n", output)
 	fmt.Printf("%s\n", output)
@@ -209,6 +220,12 @@ func (s *Service) Grid2Paraview(dir string) {
 		txtFile := filepath.Join(dir, "in.txt")
 		outputDir := dir + "/output/"
 		tmpGridDir := filepath.Join(dir, "tmp.grid.*")
+
+		// 删除 outputDir 目录, TODO 需要保留历史文件
+		if err := utils.ClearDir(outputDir); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
 
 		// fmt.Println("txtFile: ", txtFile)
 		// fmt.Println("outputDir: ", outputDir)
@@ -233,6 +250,11 @@ func (s *Service) Grid2Paraview(dir string) {
 		// Read the command's output in a separate goroutine to prevent blocking
 		output, err := io.ReadAll(stdout)
 		if err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+		// Wait for the command to finish
+		if err := cmd.Wait(); err != nil {
 			fmt.Printf(utils.ErrorMsg, err)
 			return
 		}
