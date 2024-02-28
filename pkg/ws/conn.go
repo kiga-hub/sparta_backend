@@ -1,16 +1,20 @@
 package ws
 
 import (
+	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/kiga-hub/arc/logging"
+	"github.com/kiga-hub/sparta_backend/pkg/models"
 	"github.com/kiga-hub/sparta_backend/pkg/utils"
 )
 
@@ -80,12 +84,22 @@ func (c *Conn) ReadLoop() {
 			return
 		}
 
-		// // data 转 SocketMessage
+		sparta := &models.Sparta{}
+		// data 转 SocketMessage
 		// var msg ReadSocketMessage
-		// if err = json.Unmarshal(data, &msg); err != nil {
-		// 	c.logger.Infof("json.Unmarshal")
-		// 	return
-		// }
+		if err = json.Unmarshal(data, sparta); err != nil {
+			c.logger.Infof("json.Unmarshal")
+			return
+		}
+
+		surfName := strings.Replace(sparta.UploadStlName, "stl", "surf", -1)
+		circleName := sparta.ProcessSparta(GetConfig().DataDir, surfName)
+		c.CalculateSpartaResult(circleName, GetConfig().SpaExec)
+
+		if sparta.IsDumpGrid {
+			c.Grid2Paraview(filepath.Dir(circleName), GetConfig().ScriptDir)
+			// s.Grid2Paraview(filepath.Dir(circleName))
+		}
 
 		// var dataStrs []string
 		// dataStrs = append(dataStrs, fmt.Sprintf("%s %s", "variable x index", msg.Data["variable x index"]))
@@ -129,59 +143,74 @@ func (c *Conn) ReadLoop() {
 		// Print the result
 		// fmt.Println(dataStr)
 
-		cmd := exec.Command("/home/sparta/build/src/spa_")
-		cmd.Dir = "/home/sparta/examples/test"
-		// Open the file
-		file, err := os.Open("/home/sparta/examples/test/in.circle")
-		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return
-		}
-		defer file.Close()
-		// Redirect the command's stdin to the file
-		cmd.Stdin = file
+		// cmd := exec.Command("/home/sparta/build/src/spa_")
+		// cmd.Dir = "/home/sparta/examples/test"
+		// // Open the file
+		// file, err := os.Open("/home/sparta/examples/test/in.circle")
+		// if err != nil {
+		// 	fmt.Printf(utils.ErrorMsg, err)
+		// 	return
+		// }
+		// defer file.Close()
+		// // Redirect the command's stdin to the file
+		// cmd.Stdin = file
 
-		// redirect the command's stdin to the string
-		// cmd.Stdin = strings.NewReader(dataStr)
+		// // redirect the command's stdin to the string
+		// // cmd.Stdin = strings.NewReader(dataStr)
 
-		// Create a pipe to capture the command's output
-		stdout, err := cmd.StdoutPipe()
-		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return
-		}
+		// // Create a pipe to capture the command's output
+		// stdout, err := cmd.StdoutPipe()
+		// if err != nil {
+		// 	fmt.Printf(utils.ErrorMsg, err)
+		// 	return
+		// }
 
-		// Start executing the command
-		if err := cmd.Start(); err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return
-		}
+		// // Start executing the command
+		// if err := cmd.Start(); err != nil {
+		// 	fmt.Printf(utils.ErrorMsg, err)
+		// 	return
+		// }
 
-		// Read the command's output in a separate goroutine to prevent blocking
-		output, err := io.ReadAll(stdout)
-		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return
-		}
-		// Wait for the command to finish
-		if err := cmd.Wait(); err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return
-		}
+		// // Read the command's output in a separate goroutine to prevent blocking
+		// output, err := io.ReadAll(stdout)
+		// if err != nil {
+		// 	fmt.Printf(utils.ErrorMsg, err)
+		// 	return
+		// }
+		// // Wait for the command to finish
+		// if err := cmd.Wait(); err != nil {
+		// 	fmt.Printf(utils.ErrorMsg, err)
+		// 	return
+		// }
 
-		// Print the output
-		fmt.Printf("The output: %s\n", output)
-		fmt.Printf("%s\n", output)
+		// // Print the output
+		// fmt.Printf("The output: %s\n", output)
+		// fmt.Printf("%s\n", output)
 
 		// Format the output
-		result := fmt.Sprintf("%s", output)
 
-		// Write the result to the client
-		err = c.Write(1, []byte(result))
-		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return
-		}
+		// for i := 0; i < 10; i++ {
+		// 	bytes := sparta.ToBytes()
+
+		// 	// // Write the result to the client
+		// 	err = c.Write(1, bytes)
+		// 	if err != nil {
+		// 		fmt.Printf(utils.ErrorMsg, err)
+		// 		return
+		// 	}
+		// 	time.Sleep(1 * time.Second)
+		// }
+		// ra := time.Now().Format("2006-01-02 15:04:05")
+
+		// convert sparta to []byte
+		// bytes := sparta.ToBytes()
+
+		// // // Write the result to the client
+		// err = c.Write(1, bytes)
+		// if err != nil {
+		// 	fmt.Printf(utils.ErrorMsg, err)
+		// 	return
+		// }
 
 	}
 }
@@ -253,4 +282,104 @@ func (c *Conn) IsClosed() bool {
 	defer c.closeLock.RUnlock()
 
 	return c.isClosed
+}
+func (c *Conn) CalculateSpartaResult(circleName string, spaExe string) string {
+	cmd := exec.Command(spaExe)
+	cmd.Dir = filepath.Dir(circleName)
+
+	file, err := os.Open(circleName)
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+	defer file.Close()
+
+	cmd.Stdin = file
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	if err := cmd.Start(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		line := scanner.Text()
+		err = c.Write(1, []byte(line))
+		if err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return ""
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	if err := cmd.Wait(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	return filepath.Dir(circleName)
+}
+
+// Grid2Paraview -
+func (c *Conn) Grid2Paraview(dir, scriptDir string) {
+	go func() {
+		// do grid2paraview. pvpython grid2paraview.py circle.txt output -r tmp.grid.1000
+		txtFile := filepath.Join(dir, "in.txt")
+		outputDir := dir + "/output/"
+		tmpGridDir := filepath.Join(dir, "tmp.grid.*")
+
+		// Delete the outputDir directory, TODO need to keep historical files
+		if err := utils.ClearDir(outputDir); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		cmd := exec.Command("pvpython", "grid2paraview.py", txtFile, outputDir, "-r", tmpGridDir)
+		cmd.Dir = filepath.Join(scriptDir, "paraview")
+
+		// Create a pipe to capture the command's output
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		// Start executing the command
+		if err := cmd.Start(); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		// Create a new Scanner that will read from stdout
+		scanner := bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			// Send each line to the websocket
+			err = c.Write(1, []byte(scanner.Text()))
+			if err != nil {
+				fmt.Printf(utils.ErrorMsg, err)
+				return
+			}
+		}
+
+		// Wait for the command to finish
+		if err := cmd.Wait(); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		if err := scanner.Err(); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+	}()
 }

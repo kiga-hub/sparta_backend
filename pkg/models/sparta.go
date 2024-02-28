@@ -2,8 +2,12 @@ package models
 
 import (
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
+
+	"github.com/kiga-hub/sparta_backend/pkg/utils"
 )
 
 // var GlobalSurfName string
@@ -185,4 +189,119 @@ dump_modify	    2 pad 4
 
 	// fmt.Println("Done")
 	return filepath.Join(dir, "in.circle")
+}
+
+func (s *Sparta) ToBytes() []byte {
+	return []byte(fmt.Sprintf("%v", s))
+}
+
+// CalculateSpartaResult -
+func CalculateSpartaResult(circleName string, spaExe string) string {
+	cmd := exec.Command(spaExe)
+	cmd.Dir = filepath.Dir(circleName)
+	// do spar_ < in.circle
+	file, err := os.Open(circleName)
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+	defer file.Close()
+
+	// Redirect the command's stdin to the file
+	cmd.Stdin = file
+
+	// Create a pipe to capture the command's output
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	// Start executing the command
+	if err := cmd.Start(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	// Read the command's output in a separate goroutine to prevent blocking
+	output, err := io.ReadAll(stdout)
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	// Wait for the command to finish
+	if err := cmd.Wait(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	// Print the output
+	fmt.Printf("The output: %s\n", output)
+	fmt.Printf("%s\n", output)
+
+	// Format the output
+	result := string(output)
+
+	// Write the result to the client
+	fmt.Println(result)
+	return filepath.Dir(circleName)
+}
+
+// Grid2Paraview -
+func Grid2Paraview(dir, scriptDir string) {
+	go func() {
+		// do grid2paraview. pvpython grid2paraview.py circle.txt output -r tmp.grid.1000
+		txtFile := filepath.Join(dir, "in.txt")
+		outputDir := dir + "/output/"
+		tmpGridDir := filepath.Join(dir, "tmp.grid.*")
+
+		// Delete the outputDir directory, TODO need to keep historical files
+		if err := utils.ClearDir(outputDir); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		// fmt.Println("txtFile: ", txtFile)
+		// fmt.Println("outputDir: ", outputDir)
+		// fmt.Println("tmpGridDir: ", tmpGridDir)
+
+		cmd := exec.Command("pvpython", "grid2paraview.py", txtFile, outputDir, "-r", tmpGridDir)
+		cmd.Dir = filepath.Join(scriptDir, "paraview")
+
+		// Create a pipe to capture the command's output
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		// Start executing the command
+		if err := cmd.Start(); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		// Read the command's output in a separate goroutine to prevent blocking
+		output, err := io.ReadAll(stdout)
+		if err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+		// Wait for the command to finish
+		if err := cmd.Wait(); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		// Print the output
+		fmt.Printf("The output: %s\n", output)
+		fmt.Printf("%s\n", output)
+
+		// Format the output
+		result := string(output)
+
+		// Write the result to the client
+		fmt.Println(result)
+	}()
 }

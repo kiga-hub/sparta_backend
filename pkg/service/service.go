@@ -15,7 +15,6 @@ type Service struct {
 // New -
 func New(opts ...Option) (*Service, error) {
 	srv := loadOptions(opts...)
-
 	srv.service = new(sync.Map) // Others
 	return srv, nil
 }
@@ -23,10 +22,8 @@ func New(opts ...Option) (*Service, error) {
 // Start -
 func (s *Service) Start() {
 	s.logger.Info("service started")
-
 }
 
 // Stop -
 func (s *Service) Stop() {
-
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/kiga-hub/sparta_backend/pkg/service"
+	"github.com/kiga-hub/sparta_backend/pkg/ws"
 
 	"github.com/davecgh/go-spew/spew"
 	platformConf "github.com/kiga-hub/arc/conf"
@@ -36,6 +37,7 @@ func (c *WebScoketComponent) Name() string {
 // PreInit called before Init()
 func (c *WebScoketComponent) PreInit(ctx context.Context) error {
 	service.SetDefaultConfig()
+	ws.SetDefaultConfig()
 	return nil
 }
 
