@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -64,6 +65,7 @@ func (c *Sparta) ProcessSparta(dir, surfName string) string {
 	// create circle txt file
 	txtFile, err := os.Create(filepath.Join(dir, "in.txt"))
 	if err != nil {
+		fmt.Println("os.Creat in.txt err", err)
 		panic(err)
 	}
 	defer txtFile.Close()
@@ -78,6 +80,7 @@ func (c *Sparta) ProcessSparta(dir, surfName string) string {
 	// write to in.circle file
 	inFile, err := os.Create(filepath.Join(dir, "in.circle"))
 	if err != nil {
+		fmt.Println("os.Creat in.circle err", err)
 		panic(err)
 	}
 	defer inFile.Close()
@@ -199,11 +202,85 @@ func (s *Sparta) ToBytes() []byte {
 func CalculateSpartaResult(circleName string, spaExe string) string {
 	cmd := exec.Command(spaExe)
 	cmd.Dir = filepath.Dir(circleName)
-	// do spar_ < in.circle
+
 	file, err := os.Open(circleName)
 	if err != nil {
 		fmt.Printf(utils.ErrorMsg, err)
 		return ""
+	}
+	defer file.Close()
+
+	cmd.Stdin = file
+	cmd.Stdout = os.Stdout
+
+	if err := cmd.Start(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	if err := cmd.Wait(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	return filepath.Dir(circleName)
+}
+
+// CalculateSpartaResult -
+func CalculateSpartaResult3(circleName string, spaExe string) string {
+	cmd := exec.Command(spaExe)
+	cmd.Dir = filepath.Dir(circleName)
+
+	file, err := os.Open(circleName)
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+	defer file.Close()
+
+	cmd.Stdin = file
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	if err := cmd.Start(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		line := scanner.Text()
+		fmt.Println(line)
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	if err := cmd.Wait(); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return ""
+	}
+
+	return filepath.Dir(circleName)
+}
+
+// CalculateSpartaResult -
+func CalculateSpartaResult2(circleName string, spaExe string) string {
+	cmd := exec.Command(spaExe)
+	cmd.Dir = filepath.Dir(circleName)
+
+	fmt.Printf("cmd:%s, name:%s\n", spaExe, circleName)
+	// do spar_ < in.circle
+	file, err := os.Open(circleName)
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg+"os.Open(circleName)", err)
+		return err.Error()
 	}
 	defer file.Close()
 
@@ -213,27 +290,27 @@ func CalculateSpartaResult(circleName string, spaExe string) string {
 	// Create a pipe to capture the command's output
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
-		return ""
+		fmt.Printf(utils.ErrorMsg+"cmd.StdoutPipe()", err)
+		return err.Error()
 	}
 
 	// Start executing the command
 	if err := cmd.Start(); err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
-		return ""
+		fmt.Printf(utils.ErrorMsg+"cmd.Start()", err)
+		return err.Error()
 	}
 
 	// Read the command's output in a separate goroutine to prevent blocking
 	output, err := io.ReadAll(stdout)
 	if err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
-		return ""
+		fmt.Printf(utils.ErrorMsg+"io.ReadAll(stdout)", err)
+		return err.Error()
 	}
 
 	// Wait for the command to finish
 	if err := cmd.Wait(); err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
-		return ""
+		fmt.Printf(utils.ErrorMsg+"cmd.Wait()", err)
+		return err.Error()
 	}
 
 	// Print the output
@@ -258,7 +335,7 @@ func Grid2Paraview(dir, scriptDir string) {
 
 		// Delete the outputDir directory, TODO need to keep historical files
 		if err := utils.ClearDir(outputDir); err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
+			fmt.Printf(utils.ErrorMsg+"Grid2Paraview utils.ClearDir(outputDir)", err)
 			return
 		}
 
@@ -272,25 +349,25 @@ func Grid2Paraview(dir, scriptDir string) {
 		// Create a pipe to capture the command's output
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
+			fmt.Printf(utils.ErrorMsg+"Grid2Paraview cmd.StdoutPipe()", err)
 			return
 		}
 
 		// Start executing the command
 		if err := cmd.Start(); err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
+			fmt.Printf(utils.ErrorMsg+"Grid2Paraview cmd.Start()", err)
 			return
 		}
 
 		// Read the command's output in a separate goroutine to prevent blocking
 		output, err := io.ReadAll(stdout)
 		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
+			fmt.Printf(utils.ErrorMsg+"Grid2Paraview io.ReadAll(stdout)", err)
 			return
 		}
 		// Wait for the command to finish
 		if err := cmd.Wait(); err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
+			fmt.Printf(utils.ErrorMsg+"Grid2Paraview cmd.Wait()", err)
 			return
 		}
 

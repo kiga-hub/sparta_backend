@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/creack/pty"
 	"github.com/gorilla/websocket"
 	"github.com/kiga-hub/arc/logging"
 	"github.com/kiga-hub/sparta_backend/pkg/models"
@@ -85,16 +87,20 @@ func (c *Conn) ReadLoop() {
 		}
 
 		sparta := &models.Sparta{}
-		// data 转 SocketMessage
-		// var msg ReadSocketMessage
 		if err = json.Unmarshal(data, sparta); err != nil {
 			c.logger.Infof("json.Unmarshal")
+
+			err := c.Write(1, []byte("Error in passing parameters"))
+			if err != nil {
+				fmt.Printf(utils.ErrorMsg, err)
+				return
+			}
 			return
 		}
 
 		surfName := strings.Replace(sparta.UploadStlName, "stl", "surf", -1)
 		circleName := sparta.ProcessSparta(GetConfig().DataDir, surfName)
-		c.CalculateSpartaResult(circleName, GetConfig().SpaExec)
+		c.CalculateSpartaResult2(circleName, GetConfig().SpaExec)
 
 		if sparta.IsDumpGrid {
 			c.Grid2Paraview(filepath.Dir(circleName), GetConfig().ScriptDir)
@@ -228,6 +234,7 @@ func (c *Conn) WriteLoop() {
 		select {
 		case <-c.closeChan:
 			// get close notice
+			fmt.Println("close websocket remote address is:", c.ws.RemoteAddr().String())
 			return
 		case msg := <-c.outChan:
 			// get a response
@@ -283,6 +290,24 @@ func (c *Conn) IsClosed() bool {
 
 	return c.isClosed
 }
+
+func (c *Conn) ReadFromStdin() {
+	for {
+		var data []byte
+		_, err := os.Stdin.Read(data)
+		if err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+
+		err = c.Write(1, data)
+		if err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+			return
+		}
+	}
+}
+
 func (c *Conn) CalculateSpartaResult(circleName string, spaExe string) string {
 	cmd := exec.Command(spaExe)
 	cmd.Dir = filepath.Dir(circleName)
@@ -296,37 +321,165 @@ func (c *Conn) CalculateSpartaResult(circleName string, spaExe string) string {
 
 	cmd.Stdin = file
 
-	stdout, err := cmd.StdoutPipe()
+	reader, writer, _ := os.Pipe()
+	multiWriter := io.MultiWriter(os.Stdout, writer)
+	cmd.Stdout = multiWriter
+	cmd.Stderr = multiWriter
+
+	go func() {
+		scanner := bufio.NewScanner(reader)
+		for scanner.Scan() {
+			line := scanner.Text()
+			fmt.Println(line)
+			err = c.Write(1, []byte(line))
+			if err != nil {
+				fmt.Printf(utils.ErrorMsg, err)
+				break
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			fmt.Printf(utils.ErrorMsg, err)
+		}
+	}()
+
+	// if err := cmd.Start(); err != nil {
+	// 	fmt.Printf(utils.ErrorMsg, err)
+	// 	return ""
+	// }
+
+	err = c.Write(1, []byte("begin to calculate"))
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+	}
+
+	// if err := cmd.Wait(); err != nil {
+	// 	fmt.Printf(utils.ErrorMsg, err)
+	// 	return ""
+	// }
+
+	err = cmd.Run()
 	if err != nil {
 		fmt.Printf(utils.ErrorMsg, err)
 		return ""
 	}
 
+	writer.Close()
+
+	return filepath.Dir(circleName)
+}
+
+type WebSocketWriter struct {
+	ws *websocket.Conn
+}
+
+func (wsw WebSocketWriter) Write(p []byte) (n int, err error) {
+	err = wsw.ws.WriteMessage(websocket.TextMessage, p)
+	if err != nil {
+		return 0, err
+	}
+	return len(p), nil
+}
+
+func (c *Conn) CalculateSpartaResult22(circleName string, spaExe string) string {
+	cmd := exec.Command("bash", "-c", spaExe+" < "+circleName)
+	cmd.Dir = filepath.Dir(circleName)
+
+	stdoutPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+	}
+
+	stderrPipe, err := cmd.StderrPipe()
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+	}
+
 	if err := cmd.Start(); err != nil {
 		fmt.Printf(utils.ErrorMsg, err)
-		return ""
 	}
 
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		line := scanner.Text()
-		err = c.Write(1, []byte(line))
-		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return ""
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	// 实时处理标准输出
+	go func() {
+		scanner := bufio.NewScanner(stdoutPipe)
+		for scanner.Scan() {
+			fmt.Println("STDOUT:", scanner.Text())
 		}
-	}
+		wg.Done()
+	}()
 
-	if err := scanner.Err(); err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
-		return ""
-	}
+	// 实时处理错误输出
+	go func() {
+		scanner := bufio.NewScanner(stderrPipe)
+		for scanner.Scan() {
+			fmt.Println("STDERR:", scanner.Text())
+		}
+		wg.Done()
+	}()
+
+	wg.Wait()
 
 	if err := cmd.Wait(); err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
+		fmt.Println("Error waiting for command:", err)
 		return ""
 	}
 
+	return filepath.Dir(circleName)
+}
+
+func (c *Conn) CalculateSpartaResult2(circleName string, spaExe string) string {
+	cmd := exec.Command("bash", "-c", spaExe+" < "+circleName)
+	cmd.Dir = filepath.Dir(circleName)
+	// using pty to start command
+	f, err := pty.Start(cmd)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	go func() {
+
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			// Send each line to the websocket
+			err = c.Write(1, []byte(scanner.Text()))
+			if err != nil {
+				fmt.Printf(utils.ErrorMsg, err)
+				return
+			}
+		}
+
+		// buf := make([]byte, 1024)
+		// for {
+		// 	n, err := f.Read(buf)
+		// 	if err != nil {
+		// 		if err == io.EOF {
+		// 			// end of file
+		// 			fmt.Println("Done!")
+		// 		}
+		// 		// else {
+		// 		// occur error
+		// 		// fmt.Fprintln(os.Stderr, "读取错误:", err)
+		// 		// }
+		// 		break // 无论是EOF还是其他错误，都结束循环
+		// 	}
+		// 	err = c.Write(1, buf[:n])
+		// 	if err != nil {
+		// 		fmt.Printf(utils.ErrorMsg, err)
+		// 		return
+		// 	}
+		// 	// fmt.Print(string(buf[:n]))
+		// }
+	}()
+
+	// 等待命令执行完成
+	err = cmd.Wait()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "command wait err:", err)
+	}
 	return filepath.Dir(circleName)
 }
 

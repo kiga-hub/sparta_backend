@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -41,6 +42,9 @@ func (s *Server) WsConnect(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusOK, utils.FailJSONData(utils.ErrSocketConnectFailCode, utils.ErrSocketConnectFailMsg, err))
 	}
+
+	// 打印连接信息
+	fmt.Println("client connected:", conn.RemoteAddr())
 
 	if err := s.srv.WSConnect(conn, c); err != nil {
 		return c.JSON(http.StatusOK, utils.FailJSONData(utils.ErrSocketConnectFailCode, utils.ErrSocketConnectFailMsg, err))

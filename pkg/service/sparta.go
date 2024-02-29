@@ -28,14 +28,14 @@ func (s *Service) ConvertToParaview(sparta *models.Sparta) interface{} {
 
 	// calculate particles. it will calculate the in.circle file .and generate the out (**)
 	// s.CalculateSpartaResult(circleName)
-	models.CalculateSpartaResult(circleName, GetConfig().SpaExec)
+	go models.CalculateSpartaResult(circleName, GetConfig().SpaExec)
 
 	// convert to paraview file
 	if sparta.IsDumpGrid {
 		models.Grid2Paraview(filepath.Dir(circleName), GetConfig().ScriptDir)
 		// s.Grid2Paraview(filepath.Dir(circleName))
 	}
-	return "OK"
+	return "ok"
 }
 
 // HandleUploadFile handle upload file
@@ -126,25 +126,25 @@ func (s *Service) ParseImportFile(stlFile string) (*models.SpartaResultDirectory
 
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
+			fmt.Printf(utils.ErrorMsg+"ParseImportFile cmd.StdoutPipe()", err)
 			return nil, err
 		}
 
 		// Start executing the command
 		if err := cmd.Start(); err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
+			fmt.Printf(utils.ErrorMsg+"ParseImportFile  cmd.Start();", err)
 			return nil, err
 		}
 
 		// Read the command's output in a separate goroutine to prevent blocking
 		output, err := io.ReadAll(stdout)
 		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
+			fmt.Printf(utils.ErrorMsg+"ParseImportFile io.ReadAll(stdout)", err)
 			return nil, err
 		}
 		// Wait for the command to finish
 		if err := cmd.Wait(); err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
+			fmt.Printf(utils.ErrorMsg+"ParseImportFile cmd.Wait()", err)
 			return nil, err
 		}
 

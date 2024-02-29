@@ -3,6 +3,7 @@ module github.com/kiga-hub/sparta_backend
 go 1.18
 
 require (
+	github.com/creack/pty v1.1.11
 	github.com/davecgh/go-spew v1.1.1
 	github.com/gorilla/websocket v1.5.0
 	github.com/kiga-hub/arc v1.0.8
