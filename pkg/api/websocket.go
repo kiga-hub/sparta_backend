@@ -43,7 +43,7 @@ func (s *Server) WsConnect(c echo.Context) error {
 		return c.JSON(http.StatusOK, utils.FailJSONData(utils.ErrSocketConnectFailCode, utils.ErrSocketConnectFailMsg, err))
 	}
 
-	// 打印连接信息
+	// print remote address
 	fmt.Println("client connected:", conn.RemoteAddr())
 
 	if err := s.srv.WSConnect(conn, c); err != nil {

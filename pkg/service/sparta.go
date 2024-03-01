@@ -101,28 +101,13 @@ func (s *Service) ParseImportFile(stlFile string) (*models.SpartaResultDirectory
 	}
 	defer file.Close()
 
-	// fmt.Println("file.dir: ", filepath.Dir(stlFile))
-	// fmt.Println("file.name: ", filepath.Base(stlFile))
-
 	stlName := stlFile
-	// fmt.Println("stlName: ", stlName)
-
 	surfName := filepath.Join(filepath.Dir(stlName), strings.Replace(filepath.Base(stlFile), filepath.Ext(stlFile), ".surf", -1))
-	// generate surf file directory
-	// fmt.Println("surfName: ", surfName)
-	// models.GlobalSurfName = surfName
-	// fmt.Println("GlobalSurfName: ", surfName)
+
 	// convert to surf file
 	{
 		cmd := exec.Command("pvpython", "stl2surf.py", stlName, surfName)
 		cmd.Dir = GetConfig().ScriptDir
-
-		// // read file content
-		// data, err := io.ReadAll(file)
-		// if err != nil {
-		// 	s.logger.Error(err)
-		// 	return nil, err
-		// }
 
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
@@ -222,15 +207,11 @@ func (s *Service) Grid2Paraview(dir string) {
 		outputDir := dir + "/output/"
 		tmpGridDir := filepath.Join(dir, "tmp.grid.*")
 
-		// 删除 outputDir 目录, TODO 需要保留历史文件
+		// Delete the outputDir directory, TODO need to keep historical files
 		if err := utils.ClearDir(outputDir); err != nil {
 			fmt.Printf(utils.ErrorMsg, err)
 			return
 		}
-
-		// fmt.Println("txtFile: ", txtFile)
-		// fmt.Println("outputDir: ", outputDir)
-		// fmt.Println("tmpGridDir: ", tmpGridDir)
 
 		cmd := exec.Command("pvpython", "grid2paraview.py", txtFile, outputDir, "-r", tmpGridDir)
 		cmd.Dir = filepath.Join(GetConfig().ScriptDir, "paraview")

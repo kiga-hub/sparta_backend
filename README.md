@@ -24,11 +24,56 @@ spa_exec = "/{your workspace dir}/sparta_backend/bin/spa_"                  # sp
 ./sparta_backend run
 ```
 
-## 1. Installation Instructions
+### view api 
+
+```bash
+http://localhost:8000/api/swagger
+```
+
+eg.:
+
+<img src="screenshot.png"/>
+
+
+---------------------------
+
+# Please refer to the following for development and debugging
+
+## Environment configuration
+
+### Ubuntu 20.04 Sources
+
+/etc/apt/sources.list
+
+```bash
+deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse
+ 
+deb http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse
+ 
+deb http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse
+ 
+deb http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse
+ 
+deb http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
+```
+
+#### Update 
+
+```bash
+sudo apt-get update
+sudo apt-get install paraview
+```
+
+## Installation Instructions
 
 - golang version >= v1.20
 
-### 1.1 Install go
+### Install go
 
 reference: 
 
@@ -95,13 +140,6 @@ apt install libopenmpi-dev
 apt install paraview
 ```
 
-## install paraview 
-
-```bash
-# ubuntu
-apt install paraview
-```
-
 ## Install convert command
 
 ```bash
@@ -122,27 +160,9 @@ mkdir build install
 cd build
 ```
 
-
-### 2.3 Start
-
-```bash
-# Run
-./sparta_backend run
-```
-
-### view api 
-
-```bash
-http://localhost:8000/api/swagger
-```
-
-eg.:
-
-<img src="screenshot.png"/>
+#### The output is as follows：
 
 request sparta_backend ws://localhost:8000/api/ws
-
-#### The output is as follows：
 
 ```bash
 SPARTA (13 Apr 2023)
@@ -318,7 +338,7 @@ Histogram: 1 0 0 0 0 0 0 0 0 0
 
 ```
 
-### 2.4 Docker Installation
+### Docker Installation
 
 ```bash
 # Create docker image

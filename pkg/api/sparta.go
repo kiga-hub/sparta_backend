@@ -46,7 +46,7 @@ func (s *Server) importSTL(c echo.Context) error {
 	stlDir, err := s.srv.HandleUploadFile(c)
 	if err != nil {
 		s.logger.Error(err)
-		return c.JSON(http.StatusOK, utils.FailJSONData(utils.ErrImportExportCode, utils.ErrImportExportMsg, errors.New("导入模型失败")))
+		return c.JSON(http.StatusOK, utils.FailJSONData(utils.ErrImportExportCode, utils.ErrImportExportMsg, errors.New("Failure to import model!")))
 	}
 
 	// parse import file. convert stl to surf

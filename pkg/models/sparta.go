@@ -98,7 +98,7 @@ func (c *Sparta) ProcessSparta(dir, surfName string) string {
 	fmt.Fprintf(inFile, "\n")
 
 	fmt.Fprintf(inFile, "seed			 %s\n", "12345")
-	// 根据 Sparta 结构体字段写入文件
+	// Write to a file according to the Sparta struct fields
 	fmt.Fprintf(inFile, "dimension        %s\n", c.Dimension)
 	fmt.Fprintf(inFile, "global           gridcut %s comm/sort %s\n", "0.0", "yes")
 	fmt.Fprintf(inFile, "\n")
@@ -190,7 +190,6 @@ dump_modify	    2 pad 4
 	fmt.Fprintf(inFile, "run              %s\n", c.Run)
 	fmt.Fprintf(inFile, "\n")
 
-	// fmt.Println("Done")
 	return filepath.Join(dir, "in.circle")
 }
 
@@ -338,10 +337,6 @@ func Grid2Paraview(dir, scriptDir string) {
 			fmt.Printf(utils.ErrorMsg+"Grid2Paraview utils.ClearDir(outputDir)", err)
 			return
 		}
-
-		// fmt.Println("txtFile: ", txtFile)
-		// fmt.Println("outputDir: ", outputDir)
-		// fmt.Println("tmpGridDir: ", tmpGridDir)
 
 		cmd := exec.Command("pvpython", "grid2paraview.py", txtFile, outputDir, "-r", tmpGridDir)
 		cmd.Dir = filepath.Join(scriptDir, "paraview")
