@@ -26,16 +26,18 @@ func (s *Service) ConvertToParaview(sparta *models.Sparta) interface{} {
 	// process parameters
 	circleName := sparta.ProcessSparta(GetConfig().DataDir, surfName)
 
-	// calculate particles. it will calculate the in.circle file .and generate the out (**)
-	// s.CalculateSpartaResult(circleName)
-	go models.CalculateSpartaResult(circleName, GetConfig().SpaExec)
+	// {
+	// 	// calculate particles. it will calculate the in.circle file .and generate the out (**)
+	// 	// s.CalculateSpartaResult(circleName)
+	// 	go models.CalculateSpartaResult(circleName, GetConfig().SpaExec)
 
-	// convert to paraview file
-	if sparta.IsDumpGrid {
-		models.Grid2Paraview(filepath.Dir(circleName), GetConfig().ScriptDir)
-		// s.Grid2Paraview(filepath.Dir(circleName))
-	}
-	return "ok"
+	// 	// convert to paraview file
+	// 	if sparta.IsDumpGrid {
+	// 		models.Grid2Paraview(filepath.Dir(circleName), GetConfig().ScriptDir)
+	// 		// s.Grid2Paraview(filepath.Dir(circleName))
+	// 	}
+	// }
+	return "ok: " + circleName
 }
 
 // HandleUploadFile handle upload file

@@ -1,49 +1,62 @@
 {
-    "boundary_xhi": "o",
-    "boundary_xlo": "o",
-    "boundary_yhi": "o",
-    "boundary_ylo": "o",
-    "boundary_zhi": "o",
-    "boundary_zlo": "o",
-    "collide_alpha": "o",
-    "compute_heat": [
-      "heatx",
-      "heaty",
-      "heatz"
-    ],
-    "compute_speed": [
-      "u",
-      "v",
-      "w"
-    ],
-    "compute_thermo": [
-      "temp",
-      "press"
-    ],
-    "create_box_x_max": "0.5",
-    "create_box_x_min": "-0.5",
-    "create_box_y_max": "0.6",
-    "create_box_y_min": "-0.6",
-    "create_box_z_max": "0.2",
-    "create_box_z_min": "-0.1",
-    "create_grid_x": "5",
-    "create_grid_y": "5",
-    "create_grid_z": "5",
-    "dimension": "3",
-    "global_fnum": "6.83e8",
-    "global_nrho": "3.28e10",
-    "mixture_type": [
-      "CO2"
-    ],
-    "reflectivity": "1.0",
-    "run": "1000",
-    "surf_collide_type": "diffuse",
-    "temperature": "180.0",
-    "time_step": "5.102e-7",
-    "v_stream_x": "4900.0",
-    "v_stream_y": "0",
-    "v_stream_z": "0",
-    "wall_temperature": "1000.0",
-    "upload_stl_name": "b.stl",
-    "is_dump_grid":true
-  }
+  "boundary_xhi": "o",
+  "boundary_xlo": "o",
+  "boundary_yhi": "o",
+  "boundary_ylo": "o",
+  "boundary_zhi": "o",
+  "boundary_zlo": "o",
+  "collide_alpha": "o",
+  "compute_heat": [
+    "heatx",
+    "heaty",
+    "heatz"
+  ],
+  "compute_speed": [
+    "u",
+    "v",
+    "w"
+  ],
+  "compute_thermo": [
+    "temp",
+    "press"
+  ],
+  "create_box_x_max": "0.5",
+  "create_box_x_min": "-0.5",
+  "create_box_y_max": "0.6",
+  "create_box_y_min": "-0.6",
+  "create_box_z_max": "0.2",
+  "create_box_z_min": "-0.1",
+  "create_grid_x": "100",
+  "create_grid_y": "100",
+  "create_grid_z": "100",
+  "dimension": "3",
+  "global_fnum": "6.83e8",
+  "global_nrho": "3.28e10",
+  "mixture_type": [
+    "CO2"
+  ],
+  "reflectivity": "1.0",
+  "run": "500",
+  "surf_collide_type": "diffuse",
+  "temperature": "180.0",
+  "time_step": "5.102e-7",
+  "v_stream_x": "4900.0",
+  "v_stream_y": "0",
+  "v_stream_z": "0",
+  "wall_temperature": "1000.0",
+  "upload_stl_name": "g.stl",
+  "is_dump_grid": true,
+  "is_grid_to_paraview": true,
+  "dump_grid_number": "1",
+  "dump_compute_speed": [
+    "u",
+    "v",
+    "w"
+  ],
+  "dump_compute_thermo": [
+    "temp",
+    "press"
+  ],
+  "is_dump_compute_heat": true,
+  "is_grid_coordinate": true
+}

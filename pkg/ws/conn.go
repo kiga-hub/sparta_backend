@@ -2,12 +2,14 @@ package ws
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -48,16 +50,25 @@ type Conn struct {
 	closeChan chan struct{}
 	isClosed  bool
 	closeLock sync.RWMutex
+	ctx       context.Context
+	cancel    context.CancelFunc
+	firstRun  bool
+	count     int
 }
 
 // NewConn - new one
 func NewConn(conn *websocket.Conn, logger logging.ILogger) *Conn {
+	ctx, cancel := context.WithCancel(context.Background())
 	srv := &Conn{
 		ws:        conn,
 		outChan:   make(chan *SendMessage, 1024*4),
 		logger:    logger,
 		closeChan: make(chan struct{}),
 		closeLock: sync.RWMutex{},
+		ctx:       ctx,
+		cancel:    cancel,
+		firstRun:  true,
+		count:     0,
 	}
 	return srv
 }
@@ -65,54 +76,60 @@ func NewConn(conn *websocket.Conn, logger logging.ILogger) *Conn {
 // ReadLoop -
 func (c *Conn) ReadLoop() {
 	defer c.Close()
-
 	for {
-		//read
-		// var msg SocketMessage
-		// err := c.ws.ReadJSON(&msg)
-		// if err != nil {
-		// 	websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure)
-		// 	return
-		// }
-
 		msgType, data, err := c.ws.ReadMessage()
 		if err != nil {
 			websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure)
 			return
 		}
-		if msgType == websocket.CloseMessage {
-			c.logger.Infof("websocket param error: %d:%v", msgType, data)
-			return
-		}
-
-		sparta := &models.Sparta{}
-		if err = json.Unmarshal(data, sparta); err != nil {
-			c.logger.Infof("json.Unmarshal")
-
-			err := c.Write(1, []byte("Error in passing parameters"))
-			if err != nil {
+		c.count++
+		go func() {
+			fmt.Println("This is the "+strconv.Itoa(c.count)+" round of computation", "Time: ", time.Now().Format("2006-01-02 15:04:05"))
+			outputInfo := fmt.Sprintf("This is the %d round of computation Time: %s", c.count, time.Now().Format("2006-01-02 15:04:05"))
+			if err := c.Write(1, []byte(outputInfo)); err != nil {
 				fmt.Printf(utils.ErrorMsg, err)
 				return
 			}
-			return
-		}
 
-		surfName := strings.Replace(sparta.UploadStlName, "stl", "surf", -1)
-		circleName := sparta.ProcessSparta(GetConfig().DataDir, surfName)
-		c.CalculateSpartaResult(circleName, GetConfig().SpaExec)
-
-		if sparta.IsDumpGrid {
-			err := c.Write(1, []byte("Start convert grid to paraview!"))
-			if err != nil {
-				fmt.Printf(utils.ErrorMsg, err)
+			if !c.firstRun {
+				c.cancel()
+				c.ctx, c.cancel = context.WithCancel(context.Background())
+			} else {
+				c.firstRun = false
 			}
-			c.Grid2Paraview(filepath.Dir(circleName), GetConfig().ScriptDir)
-			err = c.Write(1, []byte("Done!"))
-			if err != nil {
-				fmt.Printf(utils.ErrorMsg, err)
-			}
-		}
 
+			if msgType == websocket.CloseMessage {
+				c.logger.Infof("websocket param error: %d:%v", msgType, data)
+				return
+			}
+
+			sparta := &models.Sparta{}
+			if err = json.Unmarshal(data, sparta); err != nil {
+				c.logger.Infof("json.Unmarshal")
+
+				err := c.Write(1, []byte("Error in passing parameters"))
+				if err != nil {
+					fmt.Printf(utils.ErrorMsg, err)
+					return
+				}
+				return
+			}
+
+			surfName := strings.Replace(sparta.UploadStlName, "stl", "surf", -1)
+			circleName := sparta.ProcessSparta(GetConfig().DataDir, surfName)
+			if _, err := c.CalculateSpartaResult(c.ctx, circleName, GetConfig().SpaExec); err != nil {
+				err := c.Write(1, []byte("----------Forced interrupt!----------"))
+				if err != nil {
+					fmt.Printf(utils.ErrorMsg, err)
+					return
+				}
+				return
+			}
+
+			if sparta.IsGridToParaView {
+				c.Grid2Paraview(c.ctx, filepath.Dir(circleName), GetConfig().ScriptDir)
+			}
+		}()
 	}
 }
 
@@ -175,6 +192,7 @@ func (c *Conn) Close() {
 		c.isClosed = true
 		c.ws.Close()
 		close(c.closeChan)
+		c.cancel()
 	}
 }
 
@@ -250,95 +268,181 @@ func (c *Conn) CalculateDefault(circleName string, spaExe string) string {
 	return filepath.Dir(circleName)
 }
 
-func (c *Conn) CalculateSpartaResult(circleName string, spaExe string) string {
-	cmd := exec.Command("bash", "-c", spaExe+" < "+circleName)
+func (c *Conn) CalculateSpartaResult(ctx context.Context, circleName string, spaExe string) (string, error) {
+	cmd := exec.CommandContext(ctx, "bash", "-c", fmt.Sprintf("%s < %s", spaExe, circleName))
 	cmd.Dir = filepath.Dir(circleName)
-	// using pty to start command
+
+	// Delete all files ending in *.ppm under the /data directory
+	err := filepath.Walk(GetConfig().DataDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() && filepath.Ext(info.Name()) == ".ppm" {
+			err := os.Remove(path)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return "", err
+	}
+
+	err = c.Write(1, []byte("----------Start sparta calculate!----------"))
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+	}
+
+	f, err := pty.Start(cmd)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	done := make(chan error, 1)
+	go func() {
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			select {
+			case <-ctx.Done():
+				done <- ctx.Err()
+				return
+			default:
+				err = c.Write(1, []byte(scanner.Text()))
+				if err != nil {
+					fmt.Printf(utils.ErrorMsg, err)
+					done <- err
+					return
+				}
+			}
+		}
+		done <- nil //scanner.Err()
+	}()
+
+	select {
+	case <-ctx.Done():
+		// Context was cancelled, kill the process
+		if cmd.Process != nil {
+			cmd.Process.Kill()
+		}
+		<-done // Wait for goroutine to finish
+		return "", ctx.Err()
+	case err := <-done:
+		// Command finished
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "command finished with error:", err)
+		}
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "command wait err:", err)
+		return "", err
+	}
+
+	err = c.Write(1, []byte("----------Complete sparta calculate!----------"))
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+	}
+	return filepath.Dir(circleName), nil
+}
+
+// Grid2Paraview -
+func (c *Conn) Grid2Paraview(ctx context.Context, dir, scriptDir string) {
+
+	err := c.Write(1, []byte("----------Start convert grid to paraview!----------"))
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+	}
+
+	// do grid2paraview. pvpython grid2paraview.py circle.txt output -r tmp.grid.1000
+	txtFile := filepath.Join(dir, "in.txt")
+	outputDir := dir + "/output/"
+	tmpGridDir := filepath.Join(dir, "tmp.grid.*")
+
+	// Delete the outputDir directory, TODO If need to keep historical files
+	if err := utils.ClearDir(outputDir); err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
+		return
+	}
+
+	cmd := exec.CommandContext(c.ctx, "pvpython", "grid2paraview.py", txtFile, outputDir, "-r", tmpGridDir)
+	cmd.Dir = filepath.Join(scriptDir, "paraview")
+
+	// // Create a pipe to capture the command's output
+	// stdout, err := cmd.StdoutPipe()
+	// if err != nil {
+	// 	fmt.Printf(utils.ErrorMsg, err)
+	// 	return
+	// }
+
+	// // Start executing the command
+	// if err := cmd.Start(); err != nil {
+	// 	fmt.Printf(utils.ErrorMsg, err)
+	// 	return
+	// }
+
 	f, err := pty.Start(cmd)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
 
-	err = c.Write(1, []byte("Begin!"))
-	if err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
-	}
-
+	done := make(chan error, 1)
 	go func() {
-
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
-			// Send each line to the websocket
-			err = c.Write(1, []byte(scanner.Text()))
-			if err != nil {
-				fmt.Printf(utils.ErrorMsg, err)
+			select {
+			case <-ctx.Done():
+				// Context was cancelled, stop reading
+				err = c.Write(1, []byte("Forced interrupt!"))
+				if err != nil {
+					fmt.Printf(utils.ErrorMsg, err)
+				}
+
+				done <- ctx.Err()
 				return
+			default:
+				err = c.Write(1, []byte(scanner.Text()))
+				if err != nil {
+					fmt.Printf(utils.ErrorMsg, err)
+					done <- err
+					return
+				}
 			}
 		}
-
+		done <- nil //scanner.Err()
 	}()
 
-	// wait for command to finish
-	err = cmd.Wait()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "command wait err:", err)
-	}
-	err = c.Write(1, []byte("Done!"))
-	if err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
-	}
-	return filepath.Dir(circleName)
-}
-
-// Grid2Paraview -
-func (c *Conn) Grid2Paraview(dir, scriptDir string) {
-	// do grid2paraview. pvpython grid2paraview.py circle.txt output -r tmp.grid.1000
-	txtFile := filepath.Join(dir, "in.txt")
-	outputDir := dir + "/output/"
-	tmpGridDir := filepath.Join(dir, "tmp.grid.*")
-
-	// Delete the outputDir directory, TODO need to keep historical files
-	if err := utils.ClearDir(outputDir); err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
+	select {
+	case <-ctx.Done():
+		// Context was cancelled, kill the process
+		if cmd.Process != nil {
+			cmd.Process.Kill()
+		}
+		<-done // Wait for goroutine to finish
 		return
-	}
-
-	cmd := exec.Command("pvpython", "grid2paraview.py", txtFile, outputDir, "-r", tmpGridDir)
-	cmd.Dir = filepath.Join(scriptDir, "paraview")
-
-	// Create a pipe to capture the command's output
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
-		return
-	}
-
-	// Start executing the command
-	if err := cmd.Start(); err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
-		return
-	}
-
-	// Create a new Scanner that will read from stdout
-	scanner := bufio.NewScanner(stdout)
-	for scanner.Scan() {
-		// Send each line to the websocket
-		err = c.Write(1, []byte(scanner.Text()))
+	case err := <-done:
+		// Command finished
 		if err != nil {
-			fmt.Printf(utils.ErrorMsg, err)
-			return
+			fmt.Fprintln(os.Stderr, "command finished with error:", err)
 		}
 	}
 
-	if err := scanner.Err(); err != nil {
-		fmt.Printf(utils.ErrorMsg, err)
-		return
-	}
 	// Wait for the command to finish
 	if err := cmd.Wait(); err != nil {
 		fmt.Printf(utils.ErrorMsg, err)
 		return
+	}
+
+	err = c.Write(1, []byte("----------Complete the grid to paraview!----------"))
+	if err != nil {
+		fmt.Printf(utils.ErrorMsg, err)
 	}
 
 }

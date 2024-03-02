@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/kiga-hub/sparta_backend/cmd"
@@ -26,6 +27,7 @@ var (
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU() - 2)
 	spew.Config = *spew.NewDefaultConfig()
 	spew.Config.ContinueOnMethod = true
 	cmd.AppName = AppName
