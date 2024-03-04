@@ -34,6 +34,52 @@ eg.:
 
 <img src="screenshot.png"/>
 
+##  Manually verify the configuration parameters
+
+Go to the /home/workspace/project/sparta_backend/data directory
+```bash
+cd /home/workspace/project/sparta_backend/data
+```
+
+executive program
+```bash
+../bin/spa_ < in.circle
+```
+
+### Software running environment
+
+#### System:
+
+```bash
+DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=20.04
+DISTRIB_CODENAME=focal
+DISTRIB_DESCRIPTION="Ubuntu 20.04.6 LTS"
+```
+
+#### gcc:
+
+```bash
+gcc (Ubuntu 10.5.0-1ubuntu1~20.04) 10.5.0
+Copyright (C) 2020 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+```
+
+#### g++
+
+```bash
+g++ (Ubuntu 10.5.0-1ubuntu1~20.04) 10.5.0
+Copyright (C) 2020 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+```
+
+#### pytho3:
+
+```bash
+Python 3.8.10
+```
 
 Reference:
 

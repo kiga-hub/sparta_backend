@@ -243,8 +243,8 @@ func (s *Sparta) ToBytes() []byte {
 	return []byte(fmt.Sprintf("%v", s))
 }
 
-// CalculateSpartaResult -
-func CalculateSpartaResult(circleName string, spaExe string) string {
+// ComputeSpartaResult -
+func ComputeSpartaResult(circleName string, spaExe string) string {
 	cmd := exec.Command(spaExe)
 	cmd.Dir = filepath.Dir(circleName)
 
@@ -271,8 +271,8 @@ func CalculateSpartaResult(circleName string, spaExe string) string {
 	return filepath.Dir(circleName)
 }
 
-// CalculateSpartaResult -
-func CalculateSpartaResult3(circleName string, spaExe string) string {
+// ComputeSpartaResult3 -
+func ComputeSpartaResult3(circleName string, spaExe string) string {
 	cmd := exec.Command(spaExe)
 	cmd.Dir = filepath.Dir(circleName)
 
@@ -315,8 +315,8 @@ func CalculateSpartaResult3(circleName string, spaExe string) string {
 	return filepath.Dir(circleName)
 }
 
-// CalculateSpartaResult -
-func CalculateSpartaResult2(circleName string, spaExe string) string {
+// ComputeSpartaResult2 -
+func ComputeSpartaResult2(circleName string, spaExe string) string {
 	cmd := exec.Command(spaExe)
 	cmd.Dir = filepath.Dir(circleName)
 

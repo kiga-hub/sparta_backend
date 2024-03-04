@@ -6,12 +6,22 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// WSConnect - WSConnect
-func (s *Service) WSConnect(conn *websocket.Conn, c echo.Context) error {
+// WSCompute - WSCompute
+func (s *Service) WSCompute(conn *websocket.Conn, c echo.Context) error {
 	client := ws.NewConn(conn, s.logger)
 
-	go client.ReadLoop()
-	go client.WriteLoop()
+	go client.ComputeReadLoop()
+	go client.ComputeWriteLoop()
+
+	return nil
+}
+
+// WSConvertToVisualFormat -
+func (s *Service) WSConvertToVisualFormat(conn *websocket.Conn, c echo.Context) error {
+	client := ws.NewConn(conn, s.logger)
+
+	go client.ConvertToVisualFormatReadLoop()
+	go client.ConvertToVisualFormatWriteLoop()
 
 	return nil
 }
