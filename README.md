@@ -6,6 +6,16 @@
 - Configuration File: Parse configuration files using `viper`.
 - CLI: Implement command line parameters with `cobra`.
 
+## Software description
+
+>SPARTA is an acronym for Stochastic PArallel Rarefied-gas Time-accurate Analyzer.
+
+>SPARTA is a parallel DSMC or Direct Simulation Monte Carlo code for performing simulations of low-density gases in 2d or 3d. 
+>Particles advect through a hierarchical Cartesian grid that overlays the simulation box. 
+>The grid is used to group particles by grid cell for purposes of performing collisions and chemistry. 
+>Physical objects with triangulated surfaces can be embedded in the grid, creating cut and split grid cells. 
+>The grid is also used to efficiently find particle/surface collisions.
+
 ## Start
 
 ### Configuration File
