@@ -24,7 +24,10 @@ func (s *Service) ConvertToParaview(sparta *models.Sparta) interface{} {
 	surfName := strings.Replace(sparta.UploadStlName, "stl", "surf", -1)
 
 	// process parameters
-	circleName := sparta.ProcessSparta(GetConfig().DataDir, surfName)
+	circleName, err := sparta.ProcessSparta(GetConfig().DataDir, surfName)
+	if err != nil {
+		return err
+	}
 
 	// {
 	// 	// cmpute particles. it will compute the in.circle file .and generate the out (**)

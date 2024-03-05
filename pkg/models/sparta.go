@@ -65,14 +65,14 @@ type Sparta struct {
 }
 
 // ProcessSparta -
-func (c *Sparta) ProcessSparta(dir, surfName string) string {
+func (c *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 	// fmt.Println("Process Sparta: ", c)
 
 	// create circle txt file
 	txtFile, err := os.Create(filepath.Join(dir, "in.txt"))
 	if err != nil {
 		fmt.Println("os.Creat in.txt err", err)
-		panic(err)
+		return "", err
 	}
 	defer txtFile.Close()
 
@@ -87,7 +87,7 @@ func (c *Sparta) ProcessSparta(dir, surfName string) string {
 	inFile, err := os.Create(filepath.Join(dir, "in.circle"))
 	if err != nil {
 		fmt.Println("os.Creat in.circle err", err)
-		panic(err)
+		return "", err
 	}
 	defer inFile.Close()
 
@@ -236,7 +236,7 @@ func (c *Sparta) ProcessSparta(dir, surfName string) string {
 	fmt.Fprintf(inFile, "run              %s\n", c.Run)
 	fmt.Fprintf(inFile, "\n")
 
-	return filepath.Join(dir, "in.circle")
+	return filepath.Join(dir, "in.circle"), nil
 }
 
 func (s *Sparta) ToBytes() []byte {

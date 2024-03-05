@@ -62,7 +62,15 @@ func (c *Conn) ComputeReadLoop() {
 			}
 
 			surfName := strings.Replace(sparta.UploadStlName, "stl", "surf", -1)
-			circleName := sparta.ProcessSparta(GetConfig().DataDir, surfName)
+			circleName, err := sparta.ProcessSparta(GetConfig().DataDir, surfName)
+			if err != nil {
+				err := c.Write(1, []byte("Error in processing sparta"))
+				if err != nil {
+					fmt.Printf(utils.ErrorMsg, err)
+					return
+				}
+				return
+			}
 			if _, err := c.ComputeSpartaResult(c.ctx, circleName, GetConfig().SpaExec); err != nil {
 				err := c.Write(1, []byte("----------Forced interrupt!----------"))
 				if err != nil {

@@ -142,13 +142,14 @@ func (c *Conn) Grid2Paraview(ctx context.Context, dir, scriptDir string) {
 	// 	return
 	// }
 
+	done := make(chan error, 1)
 	f, err := pty.Start(cmd)
 	if err != nil {
-		panic(err)
+		done <- err
+		fmt.Println("pty.Start error:", err)
 	}
 	defer f.Close()
 
-	done := make(chan error, 1)
 	go func() {
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
