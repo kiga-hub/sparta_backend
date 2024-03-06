@@ -44,6 +44,69 @@ eg.:
 
 <img src="screenshot.png"/>
 
+### view sparta configuration
+
+```bash
+http://localhost:8000/api/static/in.circle
+```
+
+```yaml
+################################################################################
+# 2d flow around a circle
+#
+# Note:
+#  - The "comm/sort” option to the “global” command is used to match MPI runs.
+#  - The “twopass” option is used to match Kokkos runs.
+# The "comm/sort" and "twopass" options should not be used for production runs.
+################################################################################
+
+seed			 12345
+dimension        3
+global           gridcut 0.0 comm/sort yes
+
+boundary         oo oo oo
+create_box       -0.5 0.5 -0.6 0.6 -0.1 0.2
+create_grid      100 100 100
+balance_grid     rcb cell
+
+global           nrho 6.83e8 fnum 3.28e10
+
+species          co2.species CO2
+mixture          air N2 CO2  vstream 4900 0 0 temp 180
+
+read_surf        h.surf scale 0.001 0.001 0.001
+surf_collide     1 diffuse 10000 1
+surf_modify      all collide 1
+
+collide          vss air co2.vss
+
+compute          1 grid all species u v w 
+fix              1 ave/grid all 10 100 1000 c_1[*]
+
+compute          2 eflux/grid all species heatx heaty heatz 
+fix              2 ave/grid all 10 100 1000 c_2[*]
+
+compute          3 thermal/grid all species temp press 
+fix              3 ave/grid all 10 100 1000 c_3[*]
+
+dump             1 grid all 1000 tmp.grid.* id xc yc zc f_1[*] f_3[*]
+
+write_grid       data.grid 
+
+timestep         5.102e-7
+
+dump                2 image all 100 h.surf.*.ppm type type pdiam 0.001 &
+			surf proc 0.01 size 1024 1024 zoom 1.75 &
+			gline no 0.005
+dump_modify	    2 pad 4
+
+stats            100
+stats_style      step cpu np nattempt ncoll nscoll nscheck
+
+run              1000
+
+```
+
 ##  Manually verify the configuration parameters
 
 Go to the /home/workspace/project/sparta_backend/data directory
