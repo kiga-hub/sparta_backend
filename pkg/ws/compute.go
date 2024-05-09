@@ -71,6 +71,15 @@ func (c *Conn) ComputeReadLoop() {
 				}
 				return
 			}
+			if err := sparta.EditVSSFile(filepath.Join(GetConfig().DataDir, "co2.vss")); err != nil {
+				err := c.Write(1, []byte("Error in editing vss file"))
+				if err != nil {
+					fmt.Printf(utils.ErrorMsg, err)
+					return
+				}
+				return
+			}
+
 			if _, err := c.ComputeSpartaResult(c.ctx, circleName, GetConfig().SpaExec); err != nil {
 				err := c.Write(1, []byte("----------Forced interrupt!----------"))
 				if err != nil {

@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/kiga-hub/sparta_backend/pkg/utils"
 )
@@ -20,52 +21,73 @@ type SpartaResultDirectory struct {
 	OutDir  string `json:"out_dir"`
 }
 
+const (
+	// VssFileType -
+	VssFileType = "vss"
+	// SpeciesFileType -
+	SpeciesFileType = "species"
+)
+
 // Sparta -
 type Sparta struct {
-	Dimension         string   `json:"dimension"`
-	BoundaryXLO       string   `json:"boundary_xlo"` // o a r s
-	BoundaryXHI       string   `json:"boundary_xhi"`
-	BoundaryYLO       string   `json:"boundary_ylo"`
-	BoundaryYHI       string   `json:"boundary_yhi"`
-	BoundaryZLO       string   `json:"boundary_zlo"`
-	BoundaryZHI       string   `json:"boundary_zhi"`
-	CreateBoxXMin     string   `json:"create_box_x_min"`
-	CreateBoxXMax     string   `json:"create_box_x_max"`
-	CreateBoxYMin     string   `json:"create_box_y_min"`
-	CreateBoxYMax     string   `json:"create_box_y_max"`
-	CreateBoxZMin     string   `json:"create_box_z_min"`
-	CreateBoxZMax     string   `json:"create_box_z_max"`
-	CreateGridX       string   `json:"create_grid_x"`
-	CreateGridY       string   `json:"create_grid_y"`
-	CreateGridZ       string   `json:"create_grid_z"`
-	GlobalNrho        string   `json:"global_nrho"`
-	GlobalFnum        string   `json:"global_fnum"`
-	SurfCollideType   string   `json:"surf_collide_type"` // diffuse,specular
-	CollideAlpha      string   `json:"collide_alpha"`     // hard:1,soft:1.4
-	WallTemperature   string   `json:"wall_temperature"`
-	Reflectivity      string   `json:"reflectivity"`
-	MixtureType       []string `json:"mixture_type"` // N2 CO2 O2
-	Temperature       string   `json:"temperature"`
-	VStreamX          string   `json:"v_stream_x"`     // vstream x
-	VStreamY          string   `json:"v_stream_y"`     // vstream y
-	VStreamZ          string   `json:"v_stream_z"`     // vstream z
-	ComputeSpeed      []string `json:"compute_speed"`  //  speed u\ v\ w
-	ComputeThermo     []string `json:"compute_thermo"` // Thermo temp \ press
-	ComputeHeat       []string `json:"compute_heat"`   // Heat heat_x\ heat_y\ heat_z
-	TimeStep          string   `json:"time_step"`
-	Run               string   `json:"run"`
-	UploadStlName     string   `json:"upload_stl_name"`
-	IsDumpGrid        bool     `json:"is_dump_grid"`         // Output result document
-	IsGridToParaView  bool     `json:"is_grid_to_paraview"`  // Convert to visual format
-	DumpGridNumber    string   `json:"dump_grid_number"`     // Used to dump grid
-	DumpComputeSpeed  []string `json:"dump_compute_speed"`   // speed u\ v\ w
-	DumpComputeThermo []string `json:"dump_compute_thermo"`  //temp \ press
-	IsDumpComputeHeat bool     `json:"is_dump_compute_heat"` // Heat heat_x\ heat_y\ heat_z
-	IsGridCoordinate  bool     `json:"is_grid_coordinate"`   // Grid coordinate
+	Dimension         string            `json:"dimension"`
+	BoundaryXLO       string            `json:"boundary_xlo"` // o a r s
+	BoundaryXHI       string            `json:"boundary_xhi"`
+	BoundaryYLO       string            `json:"boundary_ylo"`
+	BoundaryYHI       string            `json:"boundary_yhi"`
+	BoundaryZLO       string            `json:"boundary_zlo"`
+	BoundaryZHI       string            `json:"boundary_zhi"`
+	CreateBoxXMin     string            `json:"create_box_x_min"`
+	CreateBoxXMax     string            `json:"create_box_x_max"`
+	CreateBoxYMin     string            `json:"create_box_y_min"`
+	CreateBoxYMax     string            `json:"create_box_y_max"`
+	CreateBoxZMin     string            `json:"create_box_z_min"`
+	CreateBoxZMax     string            `json:"create_box_z_max"`
+	CreateGridX       string            `json:"create_grid_x"`
+	CreateGridY       string            `json:"create_grid_y"`
+	CreateGridZ       string            `json:"create_grid_z"`
+	GlobalNrho        string            `json:"global_nrho"`
+	GlobalFnum        string            `json:"global_fnum"`
+	SurfCollideType   string            `json:"surf_collide_type"` // diffuse,specular
+	CollideAlpha      string            `json:"collide_alpha"`     // hard:1,soft:1.4
+	WallTemperature   string            `json:"wall_temperature"`
+	Reflectivity      string            `json:"reflectivity"`
+	MixtureType       map[string]string `json:"mixture_type"` // N2 CO2 O2
+	Temperature       string            `json:"temperature"`
+	VStreamX          string            `json:"v_stream_x"`     // vstream x
+	VStreamY          string            `json:"v_stream_y"`     // vstream y
+	VStreamZ          string            `json:"v_stream_z"`     // vstream z
+	ComputeSpeed      []string          `json:"compute_speed"`  //  speed u\ v\ w
+	ComputeThermo     []string          `json:"compute_thermo"` // Thermo temp \ press
+	ComputeHeat       []string          `json:"compute_heat"`   // Heat heat_x\ heat_y\ heat_z
+	TimeStep          string            `json:"time_step"`
+	Run               string            `json:"run"`
+	UploadStlName     string            `json:"upload_stl_name"`
+	IsDumpGrid        bool              `json:"is_dump_grid"`         // Output result document
+	IsGridToParaView  bool              `json:"is_grid_to_paraview"`  // Convert to visual format
+	DumpGridNumber    string            `json:"dump_grid_number"`     // Used to dump grid
+	DumpComputeSpeed  []string          `json:"dump_compute_speed"`   // speed u\ v\ w
+	DumpComputeThermo []string          `json:"dump_compute_thermo"`  //temp \ press
+	IsDumpComputeHeat bool              `json:"is_dump_compute_heat"` // Heat heat_x\ heat_y\ heat_z
+	IsGridCoordinate  bool              `json:"is_grid_coordinate"`   // Grid coordinate
+	SpeciesFileName   string            `json:"-"`
+	VssFileName       string            `json:"-"`
+}
+
+// BindFileType -
+func (s *Sparta) BindFileType(fileType, fileName string) {
+	if fileType == VssFileType {
+		s.VssFileName = fileName
+	}
+
+	if fileType == SpeciesFileType {
+		s.SpeciesFileName = fileName
+
+	}
 }
 
 // ProcessSparta -
-func (c *Sparta) ProcessSparta(dir, surfName string) (string, error) {
+func (s *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 	// fmt.Println("Process Sparta: ", c)
 
 	// create circle txt file
@@ -77,9 +99,9 @@ func (c *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 	defer txtFile.Close()
 
 	fmt.Fprintf(txtFile, "\n")
-	fmt.Fprintf(txtFile, "dimension        %s\n", c.Dimension)
+	fmt.Fprintf(txtFile, "dimension        %s\n", s.Dimension)
 	fmt.Fprintf(txtFile, "\n")
-	fmt.Fprintf(txtFile, "create_box       %s %s %s %s %s %s\n", c.CreateBoxXMin, c.CreateBoxXMax, c.CreateBoxYMin, c.CreateBoxYMax, c.CreateBoxZMin, c.CreateBoxZMax)
+	fmt.Fprintf(txtFile, "create_box       %s %s %s %s %s %s\n", s.CreateBoxXMin, s.CreateBoxXMax, s.CreateBoxYMin, s.CreateBoxYMax, s.CreateBoxZMin, s.CreateBoxZMax)
 	fmt.Fprintf(txtFile, "read_grid        %s \n", dir+"/data.grid")
 	fmt.Fprintf(txtFile, "\n")
 
@@ -105,44 +127,54 @@ func (c *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 
 	fmt.Fprintf(inFile, "seed			 %s\n", "12345")
 	// Write to a file according to the Sparta struct fields
-	fmt.Fprintf(inFile, "dimension        %s\n", c.Dimension)
+	fmt.Fprintf(inFile, "dimension        %s\n", s.Dimension)
 	fmt.Fprintf(inFile, "global           gridcut %s comm/sort %s\n", "0.0", "yes")
 	fmt.Fprintf(inFile, "\n")
 
-	fmt.Fprintf(inFile, "boundary         %s%s %s%s %s%s\n", c.BoundaryXLO, c.BoundaryXHI, c.BoundaryYLO, c.BoundaryYHI, c.BoundaryZLO, c.BoundaryZHI)
-	fmt.Fprintf(inFile, "create_box       %s %s %s %s %s %s\n", c.CreateBoxXMin, c.CreateBoxXMax, c.CreateBoxYMin, c.CreateBoxYMax, c.CreateBoxZMin, c.CreateBoxZMax)
-	fmt.Fprintf(inFile, "create_grid      %s %s %s\n", c.CreateGridX, c.CreateGridY, c.CreateGridZ)
+	fmt.Fprintf(inFile, "boundary         %s%s %s%s %s%s\n", s.BoundaryXLO, s.BoundaryXHI, s.BoundaryYLO, s.BoundaryYHI, s.BoundaryZLO, s.BoundaryZHI)
+	fmt.Fprintf(inFile, "create_box       %s %s %s %s %s %s\n", s.CreateBoxXMin, s.CreateBoxXMax, s.CreateBoxYMin, s.CreateBoxYMax, s.CreateBoxZMin, s.CreateBoxZMax)
+	fmt.Fprintf(inFile, "create_grid      %s %s %s\n", s.CreateGridX, s.CreateGridY, s.CreateGridZ)
 	fmt.Fprintf(inFile, "balance_grid     %s %s\n", "rcb", "cell")
 	fmt.Fprintf(inFile, "\n")
 
-	fmt.Fprintf(inFile, "global           nrho %s fnum %s\n", c.GlobalNrho, c.GlobalFnum)
+	fmt.Fprintf(inFile, "global           nrho %s fnum %s\n", s.GlobalNrho, s.GlobalFnum)
 	fmt.Fprintf(inFile, "\n")
-
-	fmt.Fprintf(inFile, "species          %s %s\n", "co2.species", "CO2")
 
 	// parse MixtureType
 	var mixtureType string
-	for _, v := range c.MixtureType {
-		mixtureType += v + " "
+	for key := range s.MixtureType {
+		mixtureType += key + " "
 	}
 
-	fmt.Fprintf(inFile, "mixture          %s %s %s %s %s %s %s %s\n", "air", mixtureType, "vstream", c.VStreamX, c.VStreamY, c.VStreamZ, "temp", c.Temperature)
+	fmt.Fprintf(inFile, "species          %s %s\n", s.SpeciesFileName, mixtureType)
+
+	/*
+		species air.species N2 CO2 O2
+		mixture air N2 vstream 100.0 0 0 temp frac 0.2
+		mixture air CO2 vstream 100.0 0 0 temp frac 0.7
+		mixture air O2 vstream 100.0 0 0 temp frac 0.1
+	*/
+	for key, value := range s.MixtureType {
+		fmt.Fprintf(inFile, "mixture          %s %s %s %s %s %s %s %s %s %s\n", "air", key, "vstream", s.VStreamX, s.VStreamY, s.VStreamZ, "temp", s.Temperature, "frac", value)
+	}
+
+	// fmt.Fprintf(inFile, "mixture          %s %s %s %s %s %s %s %s\n", "air", mixtureType, "vstream", c.VStreamX, c.VStreamY, c.VStreamZ, "temp", c.Temperature)
 	fmt.Fprintf(inFile, "\n")
 
 	// fmt.Fprintf(inFile, "read_surf        %s %s %s\n", filepath.Base(GlobalSurfName), "scale", "0.001 0.001 0.001")
 	fmt.Fprintf(inFile, "read_surf        %s %s %s\n", surfName, "scale", "0.001 0.001 0.001") // surfName "b.surf"
-	fmt.Fprintf(inFile, "surf_collide     %s %s %s %s\n", "1", c.SurfCollideType, c.WallTemperature, c.Reflectivity)
+	fmt.Fprintf(inFile, "surf_collide     %s %s %s %s\n", "1", s.SurfCollideType, s.WallTemperature, s.Reflectivity)
 	fmt.Fprintf(inFile, "surf_modify      %s %s %s\n", "all", "collide", "1")
 	fmt.Fprintf(inFile, "\n")
 
-	fmt.Fprintf(inFile, "collide          %s %s %s\n", "vss", "air", "co2.vss")
+	fmt.Fprintf(inFile, "collide          %s %s %s\n", "vss", "air", s.VssFileName)
 	fmt.Fprintf(inFile, "\n")
 
 	// fmt.Fprintf(inFile, "fix              %s %s %s %s %s\n", "in", "emit/face", "air", "xlo", "twopass")
 
 	// parse ComputeSpeed
 	var computeSpeed string
-	for _, v := range c.ComputeSpeed {
+	for _, v := range s.ComputeSpeed {
 		computeSpeed += v + " "
 	}
 	fmt.Fprintf(inFile, "compute          %s %s %s %s %s\n", "1", "grid", "all", "species", computeSpeed)
@@ -151,7 +183,7 @@ func (c *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 
 	// parse ComputeHeat
 	var computeHeat string
-	for _, v := range c.ComputeHeat {
+	for _, v := range s.ComputeHeat {
 		computeHeat += v + " "
 	}
 	fmt.Fprintf(inFile, "compute          %s %s %s %s %s\n", "2", "eflux/grid", "all", "species", computeHeat)
@@ -160,7 +192,7 @@ func (c *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 
 	// parse ComputeThermo
 	var computeThermo string
-	for _, v := range c.ComputeThermo {
+	for _, v := range s.ComputeThermo {
 		computeThermo += v + " "
 	}
 
@@ -168,34 +200,34 @@ func (c *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 	fmt.Fprintf(inFile, "fix              %s %s %s %s %s %s\n", "3", "ave/grid", "all", "10", "100", "1000 c_3[*]")
 	fmt.Fprintf(inFile, "\n")
 
-	if c.IsDumpGrid {
+	if s.IsDumpGrid {
 		//  dump 1 grid 1000 tmp.grid*.id xc yc zc f_1[*] f_2[*] f_3[*]
-		dumpGridString := c.DumpGridNumber + " grid all " + c.Run + " tmp.grid.* id"
+		dumpGridString := s.DumpGridNumber + " grid all " + s.Run + " tmp.grid.* id"
 
-		if c.IsGridCoordinate {
+		if s.IsGridCoordinate {
 			dumpGridString += " xc yc zc"
 		}
 
-		if len(c.DumpComputeSpeed) == 3 {
+		if len(s.DumpComputeSpeed) == 3 {
 			dumpGridString += " f_1[*]"
 		} else {
 			speedMap := map[string]string{"u": "1", "v": "2", "w": "3"}
-			for _, speed := range c.DumpComputeSpeed {
+			for _, speed := range s.DumpComputeSpeed {
 				if val, ok := speedMap[speed]; ok {
 					dumpGridString += " f_1[" + val + "]"
 				}
 			}
 		}
 
-		if c.IsDumpComputeHeat {
+		if s.IsDumpComputeHeat {
 			dumpGridString += " f_2[*]"
 		}
 
-		if len(c.DumpComputeThermo) == 2 {
+		if len(s.DumpComputeThermo) == 2 {
 			dumpGridString += " f_3[*]"
 		} else {
 			thermoMap := map[string]string{"temp": "1", "press": "2"}
-			for _, thermo := range c.DumpComputeThermo {
+			for _, thermo := range s.DumpComputeThermo {
 				if val, ok := thermoMap[thermo]; ok {
 					dumpGridString += " f_3[" + val + "]"
 				}
@@ -209,7 +241,7 @@ func (c *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 	fmt.Fprintf(inFile, "write_grid       %s %s\n", "data.grid", "")
 	fmt.Fprintf(inFile, "\n")
 
-	fmt.Fprintf(inFile, "timestep         %s\n", c.TimeStep)
+	fmt.Fprintf(inFile, "timestep         %s\n", s.TimeStep)
 	fmt.Fprintf(inFile, "\n")
 
 	var dumpString string
@@ -233,10 +265,42 @@ func (c *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 	fmt.Fprintf(inFile, "stats_style      %s %s %s %s %s %s\n", "step", "cpu", "np", "nattempt", "ncoll", "nscoll nscheck")
 	fmt.Fprintf(inFile, "\n")
 
-	fmt.Fprintf(inFile, "run              %s\n", c.Run)
+	fmt.Fprintf(inFile, "run              %s\n", s.Run)
 	fmt.Fprintf(inFile, "\n")
 
 	return filepath.Join(dir, "in.circle"), nil
+}
+
+// EditVSSFile - collideAlpha hard:1,soft:1.4
+func (s *Sparta) EditVSSFile(fileName string) error {
+	// open file
+	content, err := os.ReadFile(fileName)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	lines := strings.Split(string(content), "\n")
+
+	// Modify each line that does not start with a "#"
+	for i, line := range lines {
+		if !strings.HasPrefix(strings.TrimSpace(line), "#") {
+			values := strings.Fields(line)
+			if len(values) > 4 {
+				values[4] = s.CollideAlpha
+				lines[i] = strings.Join(values, "   ")
+			}
+		}
+	}
+
+	output := strings.Join(lines, "\n")
+	err = os.WriteFile(fileName, []byte(output), 0644)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
 }
 
 func (s *Sparta) ToBytes() []byte {

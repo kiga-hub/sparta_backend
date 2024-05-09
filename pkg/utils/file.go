@@ -8,6 +8,30 @@ import (
 	"strings"
 )
 
+// GetFileName -
+func GetFileName(dir string) (string, error) {
+	if !IsFileExist(dir) {
+		return "", fmt.Errorf("dir is not exist")
+	}
+
+	var fileName string
+	dirList, err := os.ReadDir(dir)
+	if err != nil {
+		return "", err
+	}
+	for _, fi := range dirList {
+		if !fi.IsDir() {
+			fileName = fi.Name()
+			break
+		}
+	}
+	if fileName == "" {
+		return "", fmt.Errorf("fileName is nil")
+	}
+	return fileName, nil
+
+}
+
 // GetFolderName get folder name
 func GetFolderName(dir string) (string, error) {
 	if !IsFileExist(dir) {
