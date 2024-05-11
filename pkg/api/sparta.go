@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/kiga-hub/sparta_backend/pkg/models"
-	"github.com/kiga-hub/sparta_backend/pkg/service"
 	"github.com/kiga-hub/sparta_backend/pkg/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/pangpanglabs/echoswagger/v2"
@@ -59,7 +58,7 @@ func (s *Server) importSTL(c echo.Context) error {
 		if err != nil {
 			return c.JSON(http.StatusOK, utils.FailJSONData(utils.ErrImportExportCode, utils.ErrImportExportMsg, err))
 		}
-		service.VssFileName = fileName
+		models.VssFileName = fileName
 
 	}
 
@@ -68,7 +67,7 @@ func (s *Server) importSTL(c echo.Context) error {
 		if err != nil {
 			return c.JSON(http.StatusOK, utils.FailJSONData(utils.ErrImportExportCode, utils.ErrImportExportMsg, err))
 		}
-		service.SpeciesFileName = fileName
+		models.SpeciesFileName = fileName
 	}
 
 	if fileType == "stl" {

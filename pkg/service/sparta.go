@@ -15,19 +15,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var (
-	// SpeciesFileName co2.species
-	SpeciesFileName = "co2.species"
-	// VssFileName co2.vss
-	VssFileName = "co2.vss"
-)
-
 // ConvertToParaview -
 func (s *Service) ConvertToParaview(sparta *models.Sparta) interface{} {
 
 	// bind file name. be used in other functions. e.g. generate in.circle file.
-	sparta.BindFileType(models.SpeciesFileType, SpeciesFileName)
-	sparta.BindFileType(models.VssFileType, VssFileName)
+	sparta.BindFileType(models.SpeciesFileType, models.SpeciesFileName)
+	sparta.BindFileType(models.VssFileType, models.VssFileName)
 
 	// if models.GlobalSurfName == "" {
 	// 	models.GlobalSurfName = GetConfig().DataDir

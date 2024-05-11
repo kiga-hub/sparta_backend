@@ -2,6 +2,7 @@ package models
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -28,6 +29,13 @@ const (
 	SpeciesFileType = "species"
 )
 
+var (
+	// SpeciesFileName co2.species
+	SpeciesFileName = "co2.species"
+	// VssFileName co2.vss
+	VssFileName = "co2.vss"
+)
+
 // Sparta -
 type Sparta struct {
 	Dimension         string            `json:"dimension"`
@@ -52,7 +60,8 @@ type Sparta struct {
 	CollideAlpha      string            `json:"collide_alpha"`     // hard:1,soft:1.4
 	WallTemperature   string            `json:"wall_temperature"`
 	Reflectivity      string            `json:"reflectivity"`
-	MixtureType       map[string]string `json:"mixture_type"` // N2 CO2 O2
+	MixtureType       map[string]string `json:"mixture_type"`     // N2 CO2 O2
+	MixtureTypeStr    string            `json:"mixture_type_str"` // N2 CO2 O2
 	Temperature       string            `json:"temperature"`
 	VStreamX          string            `json:"v_stream_x"`     // vstream x
 	VStreamY          string            `json:"v_stream_y"`     // vstream y
@@ -86,10 +95,16 @@ func (s *Sparta) BindFileType(fileType, fileName string) {
 	}
 }
 
+// SetFileType -
+func (s *Sparta) SetFileType() {
+	s.SpeciesFileName = SpeciesFileName
+	s.VssFileName = VssFileName
+}
+
 // ProcessSparta -
 func (s *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 	// fmt.Println("Process Sparta: ", c)
-
+	s.SetFileType()
 	// create circle txt file
 	txtFile, err := os.Create(filepath.Join(dir, "in.txt"))
 	if err != nil {
@@ -140,6 +155,16 @@ func (s *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 	fmt.Fprintf(inFile, "global           nrho %s fnum %s\n", s.GlobalNrho, s.GlobalFnum)
 	fmt.Fprintf(inFile, "\n")
 
+	// using json ummarshal convert s.MixtureTypeStr to s.MixtureType（map[string）string
+	s.MixtureType = make(map[string]string)
+	if s.MixtureTypeStr != "" {
+		err := json.Unmarshal([]byte(s.MixtureTypeStr), &s.MixtureType)
+		if err != nil {
+			fmt.Println("json.Unmarshal err", err)
+			return "", err
+		}
+	}
+
 	// parse MixtureType
 	var mixtureType string
 	for key := range s.MixtureType {
@@ -154,11 +179,14 @@ func (s *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 		mixture air CO2 vstream 100.0 0 0 temp frac 0.7
 		mixture air O2 vstream 100.0 0 0 temp frac 0.1
 	*/
-	for key, value := range s.MixtureType {
+	for key, value := range s.MixtureType { //value
 		fmt.Fprintf(inFile, "mixture          %s %s %s %s %s %s %s %s %s %s\n", "air", key, "vstream", s.VStreamX, s.VStreamY, s.VStreamZ, "temp", s.Temperature, "frac", value)
+		// fmt.Fprintf(inFile, "mixture          %s %s %s %s %s %s %s %s \n", "air", key, "vstream", s.VStreamX, s.VStreamY, s.VStreamZ, "temp", s.Temperature)
+		// mixture air N frac 0.8
+		// fmt.Fprintf(inFile, "mixture          %s %s %s %s\n", "air", key, "frac", value)
 	}
 
-	// fmt.Fprintf(inFile, "mixture          %s %s %s %s %s %s %s %s\n", "air", mixtureType, "vstream", c.VStreamX, c.VStreamY, c.VStreamZ, "temp", c.Temperature)
+	// fmt.Fprintf(inFile, "mixture          %s %s %s %s %s %s %s %s\n", "air", mixtureType, "vstream", s.VStreamX, s.VStreamY, s.VStreamZ, "temp", s.Temperature)
 	fmt.Fprintf(inFile, "\n")
 
 	// fmt.Fprintf(inFile, "read_surf        %s %s %s\n", filepath.Base(GlobalSurfName), "scale", "0.001 0.001 0.001")
@@ -170,7 +198,7 @@ func (s *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 	fmt.Fprintf(inFile, "collide          %s %s %s\n", "vss", "air", s.VssFileName)
 	fmt.Fprintf(inFile, "\n")
 
-	// fmt.Fprintf(inFile, "fix              %s %s %s %s %s\n", "in", "emit/face", "air", "xlo", "twopass")
+	fmt.Fprintf(inFile, "fix              %s %s %s %s %s\n", "in", "emit/face", "air", "xlo", "twopass")
 
 	// parse ComputeSpeed
 	var computeSpeed string
@@ -202,7 +230,8 @@ func (s *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 
 	if s.IsDumpGrid {
 		//  dump 1 grid 1000 tmp.grid*.id xc yc zc f_1[*] f_2[*] f_3[*]
-		dumpGridString := s.DumpGridNumber + " grid all " + s.Run + " tmp.grid.* id"
+		// dumpGridString := s.DumpGridNumber + " grid all " + s.Run + " tmp.grid.* id"
+		dumpGridString := s.DumpGridNumber + " grid all " + "1000" + " tmp.grid.* id"
 
 		if s.IsGridCoordinate {
 			dumpGridString += " xc yc zc"
@@ -245,7 +274,7 @@ func (s *Sparta) ProcessSparta(dir, surfName string) (string, error) {
 	fmt.Fprintf(inFile, "\n")
 
 	var dumpString string
-	dumpString += "dump                2 image all 100 " + surfName + ".*.ppm type type pdiam 0.001 &\n"
+	dumpString += "dump                2 image all 1000 " + surfName + ".*.ppm type type pdiam 0.001 &\n"
 	dumpString += "			surf proc 0.01 size 1024 1024 zoom 1.75 &\n"
 	dumpString += "			gline no 0.005\n"
 	dumpString += "dump_modify	    2 pad 4\n"
