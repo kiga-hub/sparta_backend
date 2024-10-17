@@ -1,0 +1,56 @@
+1. specires ，upload filenames
+2. 
+```
+species co2.species CO2
+mixture air CO2 vstream 4900 0 0 temp 180
+```
+
+====>
+
+air.species add file   Done
+ 
+```
+species air.species N2 CO2 
+mixture air N2 vstream 100.0 0 0 temp frac 0.2
+mixture air CO2 vstream 100.0 0 0 temp frac 0.7
+mixture air O2 vstream 100.0 0 0 temp frac 0.1
+```
+
+2. vss filename  Done
+
+```
+species          co2.species N2 CO2  {顺序X CO2 N2}
+mixture          air N2 CO2  vstream 4900 0 0 temp 180
+read_surf        h.surf scale 0.001 0.001 0.001
+surf_collide     1 diffuse 10000 1
+surf_modify      all collide 1
+collide          vss air co2.vss <-------- ?  add file  编辑框
+```
+
+3. dump question  //TODO
+
+```
+compute          1 grid all species u v w 
+fix              1 ave/grid all 10 100 1000 c_1[*]
+
+compute          2 eflux/grid all species heatx heaty heatz 
+fix              2 ave/grid all 10 100 1000 c_2[*]
+
+compute          3 thermal/grid all species temp press 
+fix              3 ave/grid all 10 100 1000 c_3[*]
+
+dump             1 grid all 1000 tmp.grid.* id xc yc zc f_1[*] f_3[1]
+# 1000 is runinn params?
+```
+
+```
+dump             1 grid all 1000 tmp.grid.* id xc yc zc f_1[*] f_3[1]
+```
+
+```
+variable b equal "1*sin(0.002093*(step-30))"
+variable a equal "1*sin(0.002093*step)"
+variable c equal  v_a-v_b
+
+run       6000 every 30 "move_surf all rotate $c 0 0 1 0.05 0 0"
+```
